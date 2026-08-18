@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f7f4;
+  --color-paper-dim: #eef0ee;
+  --color-ink: #1c2630;
+  --color-ink-soft: #4b5a63;
+  --color-harbor: #2d6e7e;
+  --color-harbor-dark: #204f5b;
+  --color-moss: #5f8863;
+  --color-rust: #b4622e;
+  --color-line: #d8dcda;
+
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+  }
+  body {
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+  ::selection {
+    background: var(--color-harbor);
+    color: var(--color-paper);
+  }
+  *:focus-visible {
+    outline: 2px solid var(--color-harbor);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* hairline rail used on the sidebar nav */
+.rail-line {
+  background-image: linear-gradient(to bottom, var(--color-line) 0 6px, transparent 6px 10px);
+  background-size: 2px 10px;
+  background-repeat: repeat-y;
+}
