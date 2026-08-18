@@ -26,7 +26,6 @@ export default function Jobs() {
   const { user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<'deadline_date' | 'status'>('deadline_date');
 
   useEffect(() => {
     if (!user) return;
@@ -59,10 +58,7 @@ export default function Jobs() {
     await supabase.from('applications').delete().eq('id', id);
   }
 
-  const sorted = [...applications].sort((a, b) => {
-    if (sortBy === 'status') return STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status);
-    return (a.deadline_date ?? '9999').localeCompare(b.deadline_date ?? '9999');
-  });
+  const sorted = [...applications].sort((a, b) => STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status));
 
   const openCount = applications.filter((a) => !['Rejected', 'Offer'].includes(a.status)).length;
 
@@ -76,21 +72,6 @@ export default function Jobs() {
       </div>
       <p className="text-ink-soft mb-6 text-sm">Every application in one table instead of a mental list.</p>
 
-      <div className="flex items-center gap-2 mb-3 font-mono text-xs">
-        <span className="text-ink-soft">Sort by</span>
-        {(['deadline_date', 'status'] as const).map((key) => (
-          <button
-            key={key}
-            onClick={() => setSortBy(key)}
-            className={`px-2 py-1 rounded-sm ${
-              sortBy === key ? 'bg-harbor text-white' : 'text-ink-soft hover:bg-paper-dim'
-            }`}
-          >
-            {key === 'deadline_date' ? 'Deadline' : 'Status'}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <p className="text-ink-soft">Loading…</p>
       ) : (
@@ -100,7 +81,6 @@ export default function Jobs() {
               <tr className="border-b border-line bg-paper-dim/50 text-left">
                 <th className="font-medium px-4 py-2">Company</th>
                 <th className="font-medium px-4 py-2">Role</th>
-                <th className="font-medium px-4 py-2 w-36">Deadline</th>
                 <th className="font-medium px-4 py-2 w-36">Status</th>
                 <th className="w-8" />
               </tr>
@@ -120,14 +100,6 @@ export default function Jobs() {
                       value={app.role}
                       onChange={(e) => update(app.id, { role: e.target.value })}
                       className="w-full px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40"
-                    />
-                  </td>
-                  <td className="px-2 py-1.5">
-                    <input
-                      type="date"
-                      value={app.deadline_date ?? ''}
-                      onChange={(e) => update(app.id, { deadline_date: e.target.value || null })}
-                      className="w-full px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs"
                     />
                   </td>
                   <td className="px-2 py-1.5">

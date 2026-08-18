@@ -15,6 +15,51 @@ const CATEGORY_STYLE: Record<ScheduleCategory, string> = {
   Other: 'bg-paper-dim text-ink-soft',
 };
 
+const CATEGORY_BLOCK_STYLE: Record<ScheduleCategory, string> = {
+  Class: 'bg-harbor text-white',
+  Work: 'bg-ink text-white',
+  Sport: 'bg-moss text-white',
+  Cooking: 'bg-rust text-white',
+  Other: 'bg-paper-dim text-ink-soft border border-line',
+};
+
+const HOUR_PX = 56;
+const DEFAULT_RANGE = { start: 7, end: 22 };
+
+function toMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/** Grid hour bounds: the default daytime window, expanded to fit any block that falls outside it. */
+function computeRange(allBlocks: ScheduleBlock[]): { start: number; end: number } {
+  if (allBlocks.length === 0) return DEFAULT_RANGE;
+  const starts = allBlocks.map((b) => Math.floor(toMinutes(b.start_time) / 60));
+  const ends = allBlocks.map((b) => Math.ceil(toMinutes(b.end_time) / 60));
+  return {
+    start: Math.min(DEFAULT_RANGE.start, ...starts),
+    end: Math.max(DEFAULT_RANGE.end, ...ends),
+  };
+}
+
+/** Assigns overlapping same-day blocks to side-by-side columns instead of stacking illegibly. */
+function layoutDay(dayBlocks: ScheduleBlock[]) {
+  const sortedBlocks = [...dayBlocks].sort((a, b) => toMinutes(a.start_time) - toMinutes(b.start_time));
+  const clusters: ScheduleBlock[][] = [];
+  let clusterEnd = -1;
+  for (const block of sortedBlocks) {
+    const start = toMinutes(block.start_time);
+    if (clusters.length === 0 || start >= clusterEnd) {
+      clusters.push([block]);
+      clusterEnd = toMinutes(block.end_time);
+    } else {
+      clusters[clusters.length - 1].push(block);
+      clusterEnd = Math.max(clusterEnd, toMinutes(block.end_time));
+    }
+  }
+  return clusters.flatMap((cluster) => cluster.map((block, i) => ({ block, col: i, of: cluster.length })));
+}
+
 export default function Schedule() {
   const { user } = useAuth();
   const [blocks, setBlocks] = useState<ScheduleBlock[]>([]);
@@ -63,6 +108,8 @@ export default function Schedule() {
   const sorted = [...filtered].sort(
     (a, b) => a.day_of_week - b.day_of_week || a.start_time.localeCompare(b.start_time)
   );
+  const { start: rangeStart, end: rangeEnd } = computeRange(blocks);
+  const todayIdx = (new Date().getDay() + 6) % 7;
 
   return (
     <div>
@@ -87,6 +134,7 @@ export default function Schedule() {
       {loading ? (
         <p className="text-ink-soft">Loading…</p>
       ) : (
+        <>
         <div className="border border-line rounded-sm overflow-hidden bg-white">
           <table className="w-full text-sm">
             <thead>
@@ -181,6 +229,77 @@ export default function Schedule() {
             Add block
           </button>
         </div>
+
+        <div className="mt-8">
+          <h2 className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-3">Weekly view</h2>
+          <div className="border border-line rounded-sm bg-white overflow-x-auto">
+            <div style={{ minWidth: 56 + DAY_NAMES.length * 96 }}>
+              <div className="flex border-b border-line">
+                <div className="w-14 shrink-0 sticky left-0 bg-white" />
+                {DAY_NAMES.map((name, i) => (
+                  <div
+                    key={name}
+                    className={`flex-1 min-w-[96px] text-center font-mono text-xs uppercase tracking-wide py-2 ${
+                      i === todayIdx ? 'text-harbor font-semibold' : 'text-ink-soft'
+                    }`}
+                  >
+                    {name.slice(0, 3)}
+                  </div>
+                ))}
+              </div>
+              <div className="flex relative" style={{ height: (rangeEnd - rangeStart) * HOUR_PX }}>
+                <div className="w-14 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative">
+                  {Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => rangeStart + i).map((h) => (
+                    <div
+                      key={h}
+                      className="absolute left-0 right-0 text-right pr-1.5 -translate-y-1/2 font-mono text-[10px] text-ink-soft"
+                      style={{ top: (h - rangeStart) * HOUR_PX }}
+                    >
+                      {String(h).padStart(2, '0')}:00
+                    </div>
+                  ))}
+                </div>
+                {DAY_NAMES.map((_, dayIdx) => (
+                  <div
+                    key={dayIdx}
+                    className="flex-1 min-w-[96px] relative border-r border-line last:border-r-0"
+                    style={{
+                      backgroundColor: dayIdx === todayIdx ? 'rgba(45,110,126,0.05)' : undefined,
+                      backgroundImage: `repeating-linear-gradient(to bottom, var(--color-line) 0, var(--color-line) 1px, transparent 1px, transparent ${HOUR_PX}px)`,
+                    }}
+                  >
+                    {layoutDay(blocks.filter((b) => b.day_of_week === dayIdx)).map(({ block, col, of }) => {
+                      const top = (toMinutes(block.start_time) - rangeStart * 60) * (HOUR_PX / 60);
+                      const height = Math.max(
+                        (toMinutes(block.end_time) - toMinutes(block.start_time)) * (HOUR_PX / 60),
+                        18
+                      );
+                      return (
+                        <div
+                          key={block.id}
+                          className={`absolute rounded-sm px-1.5 py-1 text-[11px] leading-tight overflow-hidden ${CATEGORY_BLOCK_STYLE[block.category]}`}
+                          style={{
+                            top,
+                            height,
+                            left: `calc(${(col / of) * 100}% + 2px)`,
+                            width: `calc(${(1 / of) * 100}% - 4px)`,
+                          }}
+                          title={`${block.title} · ${block.start_time}–${block.end_time}${block.location ? ' · ' + block.location : ''}`}
+                        >
+                          <div className="font-medium truncate">{block.title}</div>
+                          <div className="opacity-80 truncate">
+                            {block.start_time}–{block.end_time}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        </>
       )}
     </div>
   );
