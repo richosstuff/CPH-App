@@ -280,7 +280,7 @@ export default function Portfolio() {
                 <td>
                   <button
                     onClick={() => void removeLiability(l.id)}
-                    className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1.5"
+                    className="text-ink-soft/60 hover:text-rust p-1.5"
                     aria-label={`Remove ${l.name}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />

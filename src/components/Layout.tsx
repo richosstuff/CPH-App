@@ -55,7 +55,7 @@ export default function Layout() {
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-paper border-r border-line flex flex-col justify-between px-4 pt-[calc(1.5rem_+_env(safe-area-inset-top))] pb-[calc(1.5rem_+_env(safe-area-inset-bottom))] transition-transform duration-200 ease-out ${
           drawerOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
-        } md:static md:z-auto md:w-56 md:translate-x-0 md:shadow-none`}
+        } md:sticky md:top-0 md:h-screen md:z-auto md:w-56 md:translate-x-0 md:shadow-none`}
       >
         <div>
           <div className="flex items-center justify-center py-5 mb-6 border-b border-line">

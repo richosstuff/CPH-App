@@ -133,11 +133,11 @@ export default function Todos() {
               type="date"
               value={todo.deadline_date ?? ''}
               onChange={(e) => void updateTodo(todo.id, { deadline_date: e.target.value || null })}
-              className="w-[136px] shrink-0 px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs text-ink-soft"
+              className="w-24 sm:w-[136px] shrink-0 px-1 sm:px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs text-ink-soft"
             />
             <button
               onClick={() => void removeTodo(todo.id)}
-              className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1.5 shrink-0"
+              className="text-ink-soft/60 hover:text-rust p-1.5 shrink-0"
               aria-label="Remove"
             >
               <Trash2 className="w-3.5 h-3.5" />

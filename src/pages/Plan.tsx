@@ -156,7 +156,7 @@ export default function Plan() {
                     </div>
                     <button
                       onClick={() => void removeItem(item.id)}
-                      className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1 shrink-0"
+                      className="text-ink-soft/60 hover:text-rust p-1 shrink-0"
                       aria-label="Remove checklist item"
                     >
                       <Trash2 className="w-3 h-3" />

@@ -186,7 +186,7 @@ export default function Habits() {
                   <td>
                     <button
                       onClick={() => void removeHabit(habit.id)}
-                      className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1"
+                      className="text-ink-soft/60 hover:text-rust p-1"
                       aria-label={`Remove ${habit.name}`}
                     >
                       <X className="w-3.5 h-3.5" />

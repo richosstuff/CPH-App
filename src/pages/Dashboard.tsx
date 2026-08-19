@@ -640,7 +640,7 @@ export default function Dashboard() {
                     </span>
                     <button
                       onClick={() => void removeNote(n.id)}
-                      className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust"
+                      className="text-ink-soft/60 hover:text-rust"
                       aria-label="Remove note"
                     >
                       <Trash2 className="w-3 h-3" />

@@ -185,7 +185,7 @@ export default function ControlCentre({ initialGoalId }: { initialGoalId: string
             </label>
             <button
               onClick={() => void removeCheckpoint(cp.id)}
-              className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1 shrink-0"
+              className="text-ink-soft/60 hover:text-rust p-1 shrink-0"
               aria-label="Remove checkpoint"
             >
               <Trash2 className="w-3.5 h-3.5" />

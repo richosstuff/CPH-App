@@ -131,7 +131,7 @@ export default function Network() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line bg-paper-dim/50 text-left">
-                <th className="font-medium px-4 py-2">Name</th>
+                <th className="sticky left-0 z-10 bg-paper-dim font-medium px-4 py-2 border-r border-line">Name</th>
                 <th className="font-medium px-4 py-2 w-28">Category</th>
                 <th className="font-medium px-4 py-2">Met where</th>
                 <th className="font-medium px-4 py-2 w-32">Met</th>
@@ -149,7 +149,7 @@ export default function Network() {
                 const stale = isStale(contact);
                 return (
                   <tr key={contact.id} className="border-b border-line last:border-0 group">
-                    <td className="px-2 py-1.5">
+                    <td className="sticky left-0 z-10 bg-white border-r border-line px-2 py-1.5">
                       <input
                         value={contact.name}
                         onChange={(e) => update(contact.id, { name: e.target.value })}
@@ -219,7 +219,7 @@ export default function Network() {
                     <td>
                       <button
                         onClick={() => void removeRow(contact.id)}
-                        className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1.5"
+                        className="text-ink-soft/60 hover:text-rust p-1.5"
                         aria-label={`Remove ${contact.name}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />

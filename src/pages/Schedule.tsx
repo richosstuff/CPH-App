@@ -212,7 +212,7 @@ export default function Schedule() {
                   <td>
                     <button
                       onClick={() => void removeRow(block.id)}
-                      className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1.5"
+                      className="text-ink-soft/60 hover:text-rust p-1.5"
                       aria-label={`Remove ${block.title}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />

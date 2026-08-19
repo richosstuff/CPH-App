@@ -292,7 +292,7 @@ export default function Financials() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-paper-dim/50 text-left">
-              <th className="font-medium px-4 py-2 w-32">Date</th>
+              <th className="sticky left-0 z-10 bg-paper-dim font-medium px-4 py-2 w-32 border-r border-line">Date</th>
               <th className="font-medium px-4 py-2 w-24">Type</th>
               <th className="font-medium px-4 py-2">Description</th>
               <th className="font-medium px-4 py-2 w-24">Amount</th>
@@ -306,7 +306,7 @@ export default function Financials() {
           <tbody>
             {sorted.map((t) => (
               <tr key={t.id} className="border-b border-line last:border-0 group">
-                <td className="px-2 py-1.5">
+                <td className="sticky left-0 z-10 bg-white border-r border-line px-2 py-1.5">
                   <input type="date" value={t.date} onChange={(e) => void updateTransaction(t.id, { date: e.target.value })} className="w-full px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs" />
                 </td>
                 <td className="px-2 py-1.5">
@@ -346,7 +346,7 @@ export default function Financials() {
                   <input value={t.label ?? ''} onChange={(e) => void updateTransaction(t.id, { label: e.target.value || null })} placeholder="optional tag" className="w-full px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 text-xs" />
                 </td>
                 <td>
-                  <button onClick={() => void removeTransaction(t.id)} className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1.5" aria-label={`Remove ${t.description}`}>
+                  <button onClick={() => void removeTransaction(t.id)} className="text-ink-soft/60 hover:text-rust p-1.5" aria-label={`Remove ${t.description}`}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </td>

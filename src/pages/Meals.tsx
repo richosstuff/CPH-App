@@ -295,7 +295,7 @@ export default function Meals() {
                         <td>
                           <button
                             onClick={() => void removeItem(item.id)}
-                            className="opacity-0 group-hover:opacity-100 text-ink-soft hover:text-rust p-1"
+                            className="text-ink-soft/60 hover:text-rust p-1"
                             aria-label={`Remove ${item.item}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
