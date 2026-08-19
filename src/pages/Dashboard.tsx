@@ -765,18 +765,21 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-ink-soft">
           Drag a handle to reorder, the right edge to resize.{' '}
-          {layoutMode === 'scroll' ? 'Two rows, scroll horizontally for more.' : ''} Change layout from Settings.
+          {layoutMode === 'scroll' ? 'Flows top-to-bottom, scroll sideways for more.' : ''} Change layout from Settings.
         </p>
         <Link to="/settings" className="text-xs text-harbor hover:underline">
           Customize
         </Link>
       </div>
 
+      {/* Scroll mode uses flex column-wrap, not CSS Grid: each widget keeps its own width and just
+          flows into whichever column has room, instead of Grid forcing every item in a column to
+          share one column width (which stranded half-width cards next to full-width ones). */}
       <div
         className={
           layoutMode === 'scroll'
-            ? 'grid grid-flow-col grid-rows-[auto_auto] items-start gap-4 overflow-x-auto pb-3'
-            : 'flex flex-wrap gap-4'
+            ? 'flex flex-col flex-wrap content-start items-start gap-4 h-[700px] overflow-x-auto pb-3'
+            : 'flex flex-wrap items-start gap-4'
         }
       >
         {visibleOrder.map((id, i) => {
@@ -784,8 +787,8 @@ export default function Dashboard() {
           const widthClass =
             layoutMode === 'scroll'
               ? size === 'half'
-                ? 'w-[420px] min-h-[240px]'
-                : 'w-[760px] min-h-[240px]'
+                ? 'w-[400px] shrink-0'
+                : 'w-[720px] shrink-0'
               : size === 'half'
                 ? 'w-full md:w-[calc(50%-0.5rem)]'
                 : 'w-full';
