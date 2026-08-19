@@ -45,7 +45,7 @@ import { Check, ArrowRight, GripVertical, Plus, Trash2 } from 'lucide-react';
 
 const STALE_DAYS = 30;
 const SAVINGS_GATE_MONTH = '2027-02-01';
-const NOTE_TINTS = ['#2d6e7e', '#5f8863', '#b4622e', '#6b5b95'];
+const NOTE_TINTS = ['#822200', '#5f8863', '#b4622e', '#6b5b95'];
 
 function ResizeHandle({ onResize }: { onResize: (grow: boolean) => void }) {
   function handleMouseDown(downEvent: React.MouseEvent) {
@@ -472,6 +472,7 @@ export default function Dashboard() {
         return habits.length === 0 ? (
           <p className="text-sm text-ink-soft">No habits yet — add some from the Habits tab.</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr>
@@ -506,6 +507,7 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         );
 
       case 'priorities':
@@ -618,7 +620,7 @@ export default function Dashboard() {
       case 'notes':
         return (
           <div>
-            <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
               {notes.map((n, i) => (
                 <div
                   key={n.id}
@@ -675,7 +677,7 @@ export default function Dashboard() {
                 <XAxis dataKey="month" tick={{ fontSize: 9, fontFamily: 'ui-monospace' }} />
                 <YAxis tick={{ fontSize: 9, fontFamily: 'ui-monospace' }} />
                 <Tooltip contentStyle={{ fontFamily: 'ui-monospace', fontSize: 12, borderRadius: 2 }} />
-                <Area type="monotone" dataKey="value" stroke="#2d6e7e" fill="#2d6e7e" fillOpacity={0.15} strokeWidth={1.75} isAnimationActive={false} />
+                <Area type="monotone" dataKey="value" stroke="#822200" fill="#822200" fillOpacity={0.15} strokeWidth={1.75} isAnimationActive={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

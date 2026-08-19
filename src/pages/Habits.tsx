@@ -150,6 +150,7 @@ export default function Habits() {
         <p className="text-ink-soft">Loading…</p>
       ) : (
         <div className="border border-line rounded-sm overflow-hidden bg-white">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line bg-paper-dim/50">
@@ -195,6 +196,7 @@ export default function Habits() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="flex items-center gap-2 px-4 py-2.5 border-t border-line bg-paper-dim/30">
             <Plus className="w-3.5 h-3.5 text-ink-soft" />
             <input

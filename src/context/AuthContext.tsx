@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { seedIfEmpty } from '../lib/seed';
@@ -17,17 +17,24 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const seededUserIds = useRef(new Set<string>());
 
   useEffect(() => {
+    function seedOnce(userId: string) {
+      if (seededUserIds.current.has(userId)) return;
+      seededUserIds.current.add(userId);
+      void seedIfEmpty(userId);
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
-      if (data.session?.user) void seedIfEmpty(data.session.user.id);
+      if (data.session?.user) seedOnce(data.session.user.id);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (newSession?.user) void seedIfEmpty(newSession.user.id);
+      if (newSession?.user) seedOnce(newSession.user.id);
     });
 
     return () => listener.subscription.unsubscribe();

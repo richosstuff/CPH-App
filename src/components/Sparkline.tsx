@@ -1,6 +1,6 @@
 import { ResponsiveContainer, LineChart, Line } from 'recharts';
 
-export default function Sparkline({ data, color = '#2d6e7e' }: { data: number[]; color?: string }) {
+export default function Sparkline({ data, color = '#822200' }: { data: number[]; color?: string }) {
   if (data.length < 2) {
     return <div style={{ width: 120, height: 36 }} className="flex items-center text-[10px] text-ink-soft font-mono">not enough data yet</div>;
   }

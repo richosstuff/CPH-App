@@ -219,6 +219,7 @@ export default function Portfolio() {
 
       <h2 className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-3">Liabilities</h2>
       <div className="border border-line rounded-sm overflow-hidden bg-white">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-paper-dim/50 text-left">
@@ -289,6 +290,7 @@ export default function Portfolio() {
             ))}
           </tbody>
         </table>
+        </div>
         <button
           onClick={() => void addLiability()}
           className="flex items-center gap-2 px-4 py-2.5 border-t border-line bg-paper-dim/30 text-sm text-ink-soft hover:text-harbor w-full"

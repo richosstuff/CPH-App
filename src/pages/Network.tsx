@@ -127,6 +127,7 @@ export default function Network() {
               No contacts yet — add the first person you meet.
             </p>
           )}
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line bg-paper-dim/50 text-left">
@@ -229,6 +230,7 @@ export default function Network() {
               })}
             </tbody>
           </table>
+          </div>
           <button
             onClick={() => void addRow()}
             className="flex items-center gap-2 px-4 py-2.5 border-t border-line bg-paper-dim/30 text-sm text-ink-soft hover:text-harbor w-full"

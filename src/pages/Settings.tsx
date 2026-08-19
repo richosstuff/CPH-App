@@ -154,7 +154,7 @@ export default function Settings() {
         <div className="flex items-center gap-3 mb-5">
           <input
             type="color"
-            value={settings.accent_color ?? '#2d6e7e'}
+            value={settings.accent_color ?? '#822200'}
             onChange={(e) => void save({ accent_color: e.target.value })}
             className="w-9 h-9 rounded-sm border border-line cursor-pointer bg-transparent p-0.5"
           />

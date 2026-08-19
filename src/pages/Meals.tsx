@@ -236,6 +236,7 @@ export default function Meals() {
               />
 
               <div className="border border-line rounded-sm overflow-hidden">
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-line bg-paper-dim/50 text-left">
@@ -304,6 +305,7 @@ export default function Meals() {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 <button
                   onClick={() => void addItem(idea.id)}
                   className="flex items-center gap-2 px-3 py-2 border-t border-line bg-paper-dim/30 text-xs text-ink-soft hover:text-harbor w-full"

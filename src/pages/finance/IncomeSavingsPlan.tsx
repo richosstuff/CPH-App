@@ -140,12 +140,13 @@ export default function IncomeSavingsPlan() {
               strokeDasharray="3 3"
               name="Model low"
             />
-            <Bar dataKey="actual" fill="#2d6e7e" radius={[2, 2, 0, 0]} name="Actual net income" />
+            <Bar dataKey="actual" fill="#822200" radius={[2, 2, 0, 0]} name="Actual net income" />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
       <div className="border border-line rounded-sm overflow-hidden bg-white">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-paper-dim/50 text-left">
@@ -190,6 +191,7 @@ export default function IncomeSavingsPlan() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

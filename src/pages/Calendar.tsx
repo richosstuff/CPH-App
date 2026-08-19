@@ -18,7 +18,7 @@ export default function CalendarPage() {
   const [dragCategoryId, setDragCategoryId] = useState<string | null>(null);
   const [armedCategoryId, setArmedCategoryId] = useState<string | null>(null);
   const [newCatName, setNewCatName] = useState('');
-  const [newCatColor, setNewCatColor] = useState('#2d6e7e');
+  const [newCatColor, setNewCatColor] = useState('#822200');
   const [addingEventFor, setAddingEventFor] = useState<string | null>(null);
   const [newEventText, setNewEventText] = useState('');
   const [newEventTime, setNewEventTime] = useState('');
@@ -282,6 +282,10 @@ export default function CalendarPage() {
                       key={ev.id}
                       onMouseEnter={() => setHoveredEventId(ev.id)}
                       onMouseLeave={() => setHoveredEventId((prev) => (prev === ev.id ? null : prev))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHoveredEventId((prev) => (prev === ev.id ? null : ev.id));
+                      }}
                       className="group/event flex items-center justify-between gap-0.5"
                     >
                       {hoveredEventId === ev.id ? (
@@ -304,7 +308,11 @@ export default function CalendarPage() {
                           {ev.label}
                         </span>
                       )}
-                      <span className="opacity-0 group-hover/event:opacity-100 flex items-center shrink-0">
+                      <span
+                        className={`flex items-center shrink-0 ${
+                          hoveredEventId === ev.id ? 'opacity-100' : 'opacity-0 group-hover/event:opacity-100'
+                        }`}
+                      >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Compass } from 'lucide-react';
+import Logo from '../components/Logo';
 
 export default function Login() {
   const { signIn, signUp } = useAuth();
@@ -30,7 +30,7 @@ export default function Login() {
     <div className="min-h-screen bg-paper flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 mb-8 justify-center">
-          <Compass className="w-5 h-5 text-harbor" strokeWidth={1.5} />
+          <Logo variant="icon" className="w-5 h-5" />
           <span className="font-mono text-xs tracking-[0.2em] uppercase text-ink-soft">
             Copenhagen Chapter
           </span>

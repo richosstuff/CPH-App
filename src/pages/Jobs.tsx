@@ -77,6 +77,7 @@ export default function Jobs() {
         <p className="text-ink-soft">Loading…</p>
       ) : (
         <div className="border border-line rounded-sm overflow-hidden bg-white">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line bg-paper-dim/50 text-left">
@@ -132,6 +133,7 @@ export default function Jobs() {
               })}
             </tbody>
           </table>
+          </div>
           <button
             onClick={() => void addRow()}
             className="flex items-center gap-2 px-4 py-2.5 border-t border-line bg-paper-dim/30 text-sm text-ink-soft hover:text-harbor w-full"

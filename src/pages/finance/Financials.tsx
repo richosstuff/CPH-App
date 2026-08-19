@@ -246,7 +246,7 @@ export default function Financials() {
                 <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: 'ui-monospace' }} />
                 <YAxis tick={{ fontSize: 9, fontFamily: 'ui-monospace' }} />
                 <Tooltip contentStyle={{ fontFamily: 'ui-monospace', fontSize: 12, borderRadius: 2 }} />
-                <Line type="monotone" dataKey="net" stroke="#2d6e7e" strokeWidth={1.75} dot={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="net" stroke="#822200" strokeWidth={1.75} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -288,6 +288,7 @@ export default function Financials() {
       </div>
 
       <div className="border border-line rounded-sm overflow-hidden bg-white">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-paper-dim/50 text-left">
@@ -353,6 +354,7 @@ export default function Financials() {
             ))}
           </tbody>
         </table>
+        </div>
         <button onClick={() => void addTransaction()} className="flex items-center gap-2 px-4 py-2.5 border-t border-line bg-paper-dim/30 text-sm text-ink-soft hover:text-harbor w-full">
           <Plus className="w-3.5 h-3.5" />
           Add transaction
