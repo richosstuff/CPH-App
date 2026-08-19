@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  Map as MapIcon,
   Users,
   CheckSquare,
   Briefcase,
@@ -22,6 +23,7 @@ export interface NavItem {
 /** Canonical nav list and default order. Settings' drag-to-reorder stores just the `to` paths. */
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/plan', label: 'The Plan', icon: MapIcon },
   { to: '/network', label: 'Network', icon: Users },
   { to: '/habits', label: 'Habits', icon: CheckSquare },
   { to: '/jobs', label: 'Jobs', icon: Briefcase },

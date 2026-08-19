@@ -276,12 +276,14 @@ export interface Note {
   position: number;
 }
 
-/** Multiple allowed per date, unlike CalendarDay which is one row per date. */
+/** Multiple allowed per date, unlike CalendarDay which is one row per date. Ordered by time when set, else by position. */
 export interface CalendarEvent {
   id: string;
   user_id: string;
   date: string; // ISO date
   label: string;
+  time: string | null; // "HH:MM", optional
+  position: number; // manual order among same-day events, used when no time (or a tie) breaks the sort
 }
 
 export const DASHBOARD_WIDGET_IDS = [
@@ -290,6 +292,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'priorities',
   'todos',
   'calendar',
+  'agenda',
   'notes',
   'net-worth-trend',
   'spending-breakdown',
@@ -305,10 +308,13 @@ export const DEFAULT_WIDGET_SIZE: Record<DashboardWidgetId, DashboardWidgetSize>
   priorities: 'half',
   todos: 'half',
   calendar: 'half',
+  agenda: 'half',
   notes: 'full',
   'net-worth-trend': 'half',
   'spending-breakdown': 'half',
 };
+
+export type DashboardLayoutMode = 'wrap' | 'scroll';
 
 export interface UserSettings {
   id: string;
@@ -321,4 +327,5 @@ export interface UserSettings {
   dashboard_widget_order: DashboardWidgetId[] | null; // null = default order
   dashboard_widget_visibility: Partial<Record<DashboardWidgetId, boolean>> | null; // missing key = visible
   dashboard_widget_size: Partial<Record<DashboardWidgetId, DashboardWidgetSize>> | null; // missing key = DEFAULT_WIDGET_SIZE
+  dashboard_layout_mode: DashboardLayoutMode | null; // null = 'wrap'
 }

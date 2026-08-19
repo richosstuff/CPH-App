@@ -79,7 +79,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="flex-1 px-8 py-8 max-w-5xl">
+      <main className="flex-1 px-8 py-8 max-w-7xl">
         <div className="flex items-center justify-between gap-4 mb-6">
           <SearchBar />
           <Link to="/settings" aria-label="Settings" className="flex items-center gap-2.5 shrink-0 group">

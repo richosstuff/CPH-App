@@ -24,6 +24,11 @@
     color: var(--color-ink);
     font-family: var(--font-body);
   }
+  /* Every page's main heading follows the user's custom accent color — one rule,
+     so it stays consistent automatically instead of tagging text-harbor on each page. */
+  h1 {
+    color: var(--color-harbor);
+  }
   ::selection {
     background: var(--color-harbor);
     color: var(--color-paper);

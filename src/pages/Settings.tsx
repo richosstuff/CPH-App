@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { UserSettings, DashboardWidgetId, DashboardWidgetSize } from '../lib/types';
+import type { UserSettings, DashboardWidgetId, DashboardWidgetSize, DashboardLayoutMode } from '../lib/types';
 import { DASHBOARD_WIDGET_IDS, DEFAULT_WIDGET_SIZE } from '../lib/types';
 import { orderNavItems } from '../lib/navConfig';
 import { reorder } from '../lib/dragReorder';
@@ -16,6 +16,7 @@ const WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   priorities: 'Top 3 priorities',
   todos: 'To-Do',
   calendar: 'Calendar',
+  agenda: 'Next 3 days',
   notes: 'Notes',
   'net-worth-trend': 'Net worth trend',
   'spending-breakdown': 'Spending breakdown',
@@ -32,6 +33,7 @@ const EMPTY_SETTINGS: UserSettings = {
   dashboard_widget_order: null,
   dashboard_widget_visibility: null,
   dashboard_widget_size: null,
+  dashboard_layout_mode: null,
 };
 
 export default function Settings() {
@@ -68,6 +70,7 @@ export default function Settings() {
           dashboard_widget_order: merged.dashboard_widget_order,
           dashboard_widget_visibility: merged.dashboard_widget_visibility,
           dashboard_widget_size: merged.dashboard_widget_size,
+          dashboard_layout_mode: merged.dashboard_layout_mode,
           id: settings.id || undefined,
         },
         { onConflict: 'user_id' }
@@ -217,7 +220,25 @@ export default function Settings() {
 
       <div className="border border-line rounded-sm bg-white p-5">
         <h2 className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-1">Dashboard widgets</h2>
-        <p className="text-xs text-ink-soft mb-3">Show or hide — drag to reorder them directly on the Dashboard.</p>
+        <p className="text-xs text-ink-soft mb-3">Show or hide — drag to reorder or resize them directly on the Dashboard.</p>
+
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-line">
+          <span className="text-sm text-ink-soft mr-1">Layout</span>
+          {(['wrap', 'scroll'] as DashboardLayoutMode[]).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => void save({ dashboard_layout_mode: mode === 'wrap' ? null : mode })}
+              className={`px-2.5 py-1 rounded-sm text-xs font-mono ${
+                (settings.dashboard_layout_mode ?? 'wrap') === mode
+                  ? 'bg-harbor text-white'
+                  : 'text-ink-soft hover:bg-paper-dim'
+              }`}
+            >
+              {mode === 'wrap' ? 'Wrap to new rows' : 'Scroll horizontally'}
+            </button>
+          ))}
+        </div>
+
         <div>
           {DASHBOARD_WIDGET_IDS.map((id) => {
             const visible = settings.dashboard_widget_visibility?.[id] !== false;

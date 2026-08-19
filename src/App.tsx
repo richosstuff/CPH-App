@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Plan from './pages/Plan';
 import Network from './pages/Network';
 import Habits from './pages/Habits';
 import Jobs from './pages/Jobs';
@@ -31,6 +32,7 @@ function Gate() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/plan" element={<Plan />} />
         <Route path="/network" element={<Network />} />
         <Route path="/habits" element={<Habits />} />
         <Route path="/jobs" element={<Jobs />} />

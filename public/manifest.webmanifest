@@ -1,6 +1,6 @@
 {
-  "name": "Copenhagen Chapter",
-  "short_name": "CPH Chapter",
+  "name": "CPH Project",
+  "short_name": "CPH Project",
   "description": "Personal dashboard for the Lisbon to Copenhagen relocation and DTU MSc plan",
   "start_url": "/",
   "scope": "/",

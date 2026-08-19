@@ -20,8 +20,10 @@ import type {
   Note,
   CalendarCategory,
   CalendarDay,
+  CalendarEvent,
   UserSettings,
   DashboardWidgetId,
+  DashboardWidgetSize,
 } from '../lib/types';
 import { DASHBOARD_WIDGET_IDS, DEFAULT_WIDGET_SIZE } from '../lib/types';
 import {
@@ -37,12 +39,46 @@ import {
 import { toDkk, formatDkk } from '../lib/currency';
 import { EXPENSE_CATEGORIES, CATEGORY_COLORS } from '../lib/transactionCategories';
 import { reorder } from '../lib/dragReorder';
+import { sortDayEvents } from '../lib/calendarUtils';
 import Sparkline from '../components/Sparkline';
 import { Check, ArrowRight, GripVertical, Plus, Trash2 } from 'lucide-react';
 
 const STALE_DAYS = 30;
 const SAVINGS_GATE_MONTH = '2027-02-01';
 const NOTE_TINTS = ['#2d6e7e', '#5f8863', '#b4622e', '#6b5b95'];
+
+function ResizeHandle({ onResize }: { onResize: (grow: boolean) => void }) {
+  function handleMouseDown(downEvent: React.MouseEvent) {
+    downEvent.preventDefault();
+    downEvent.stopPropagation();
+    const startX = downEvent.clientX;
+    let done = false;
+    function cleanup() {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+    function handleMouseMove(moveEvent: MouseEvent) {
+      const delta = moveEvent.clientX - startX;
+      if (!done && Math.abs(delta) > 60) {
+        done = true;
+        onResize(delta > 0);
+        cleanup();
+      }
+    }
+    function handleMouseUp() {
+      cleanup();
+    }
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }
+  return (
+    <div
+      onMouseDown={handleMouseDown}
+      title="Drag to resize"
+      className="absolute right-0 top-0 bottom-0 w-2.5 cursor-ew-resize hover:bg-harbor/15 rounded-r-sm"
+    />
+  );
+}
 
 function WidgetCard({
   title,
@@ -51,6 +87,7 @@ function WidgetCard({
   onDragStart,
   onDrop,
   onDragEnd,
+  onResize,
   right,
   widthClass,
   children,
@@ -61,6 +98,7 @@ function WidgetCard({
   onDragStart: (i: number) => void;
   onDrop: (i: number) => void;
   onDragEnd: () => void;
+  onResize: (grow: boolean) => void;
   right?: ReactNode;
   widthClass: string;
   children: ReactNode;
@@ -69,7 +107,7 @@ function WidgetCard({
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={() => onDrop(index)}
-      className={`${widthClass} border border-line rounded-sm bg-white p-5 transition-opacity ${dragIndex === index ? 'opacity-40' : ''}`}
+      className={`${widthClass} relative border border-line rounded-sm bg-white p-5 transition-opacity ${dragIndex === index ? 'opacity-40' : ''}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -86,6 +124,7 @@ function WidgetCard({
         {right}
       </div>
       {children}
+      <ResizeHandle onResize={onResize} />
     </div>
   );
 }
@@ -108,6 +147,7 @@ export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [calCategories, setCalCategories] = useState<CalendarCategory[]>([]);
   const [calDays, setCalDays] = useState<CalendarDay[]>([]);
+  const [calEvents, setCalEvents] = useState<CalendarEvent[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [quickTodoText, setQuickTodoText] = useState('');
@@ -142,6 +182,7 @@ export default function Dashboard() {
       noteRowRes,
       calCatRes,
       calDayRes,
+      calEventRes,
       settingsRes,
     ] = await Promise.all([
       supabase.from('habits').select('*').eq('user_id', user!.id).eq('is_active', true).order('position'),
@@ -159,6 +200,7 @@ export default function Dashboard() {
       supabase.from('notes').select('*').eq('user_id', user!.id).order('position'),
       supabase.from('calendar_categories').select('*').eq('user_id', user!.id),
       supabase.from('calendar_days').select('*').eq('user_id', user!.id),
+      supabase.from('calendar_events').select('*').eq('user_id', user!.id),
       supabase.from('user_settings').select('*').eq('user_id', user!.id).maybeSingle(),
     ]);
     setHabits(habitRes.data ?? []);
@@ -176,6 +218,7 @@ export default function Dashboard() {
     setNotes(noteRowRes.data ?? []);
     setCalCategories(calCatRes.data ?? []);
     setCalDays(calDayRes.data ?? []);
+    setCalEvents(calEventRes.data ?? []);
     setSettings(settingsRes.data ?? null);
 
     const netWorth =
@@ -258,20 +301,37 @@ export default function Dashboard() {
     setNoteDragIndex(null);
   }
 
-  async function persistWidgetOrder(newOrder: DashboardWidgetId[]) {
-    setSettings((prev) => (prev ? { ...prev, dashboard_widget_order: newOrder } : prev));
-    await supabase.from('user_settings').upsert(
-      {
-        user_id: user!.id,
-        accent_color: settings?.accent_color ?? null,
-        avatar_data_url: settings?.avatar_data_url ?? null,
-        nav_order: settings?.nav_order ?? null,
-        dashboard_widget_order: newOrder,
-        dashboard_widget_visibility: settings?.dashboard_widget_visibility ?? null,
-        id: settings?.id || undefined,
-      },
-      { onConflict: 'user_id' }
-    );
+  // Always sends every settings field (not just the one changing) so a widget reorder/resize
+  // here can never silently wipe unrelated settings saved from the Settings page.
+  async function saveSettings(patch: Partial<UserSettings>) {
+    const merged = { ...settings, ...patch };
+    const { data } = await supabase
+      .from('user_settings')
+      .upsert(
+        {
+          user_id: user!.id,
+          accent_color: merged.accent_color ?? null,
+          avatar_data_url: merged.avatar_data_url ?? null,
+          display_name: merged.display_name ?? null,
+          font_preset: merged.font_preset ?? null,
+          nav_order: merged.nav_order ?? null,
+          dashboard_widget_order: merged.dashboard_widget_order ?? null,
+          dashboard_widget_visibility: merged.dashboard_widget_visibility ?? null,
+          dashboard_widget_size: merged.dashboard_widget_size ?? null,
+          dashboard_layout_mode: merged.dashboard_layout_mode ?? null,
+          id: settings?.id || undefined,
+        },
+        { onConflict: 'user_id' }
+      )
+      .select()
+      .single();
+    if (data) setSettings(data);
+  }
+
+  function handleResize(id: DashboardWidgetId, currentSize: DashboardWidgetSize, grow: boolean) {
+    const newSize: DashboardWidgetSize = grow ? 'full' : 'half';
+    if (newSize === currentSize) return;
+    void saveSettings({ dashboard_widget_size: { ...settings?.dashboard_widget_size, [id]: newSize } });
   }
 
   if (loading) return <p className="text-ink-soft">Loading…</p>;
@@ -326,6 +386,18 @@ export default function Dashboard() {
   const miniCalDays = monthGridDays(now.getFullYear(), now.getMonth());
   const calDaysByDate = new Map(calDays.map((d) => [d.date, d]));
 
+  const agendaDays = [0, 1, 2].map((offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return {
+      iso: toLocalISO(d),
+      label: offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : d.toLocaleDateString('en-GB', { weekday: 'long' }),
+      dateLabel: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+    };
+  });
+
+  const layoutMode = settings?.dashboard_layout_mode ?? 'wrap';
+
   const defaultOrder: DashboardWidgetId[] = [...DASHBOARD_WIDGET_IDS];
   const storedOrder = settings?.dashboard_widget_order ?? defaultOrder;
   const fullOrder = [...storedOrder, ...defaultOrder.filter((id) => !storedOrder.includes(id))];
@@ -338,7 +410,7 @@ export default function Dashboard() {
     }
     const reorderedVisible = reorder(visibleOrder, widgetDragIndex, index);
     const hidden = fullOrder.filter((id) => !visibleOrder.includes(id));
-    void persistWidgetOrder([...reorderedVisible, ...hidden]);
+    void saveSettings({ dashboard_widget_order: [...reorderedVisible, ...hidden] });
     setWidgetDragIndex(null);
   }
 
@@ -348,6 +420,7 @@ export default function Dashboard() {
     priorities: 'Top 3 this week',
     todos: 'To-Do',
     calendar: 'Calendar',
+    agenda: 'Next 3 Days',
     notes: 'Notes',
     'net-worth-trend': 'Net worth trend',
     'spending-breakdown': 'Spending breakdown',
@@ -514,6 +587,34 @@ export default function Dashboard() {
           </Link>
         );
 
+      case 'agenda':
+        return (
+          <div className="space-y-3">
+            {agendaDays.map(({ iso, label, dateLabel }) => {
+              const dayEvents = sortDayEvents(calEvents.filter((e) => e.date === iso));
+              return (
+                <div key={iso}>
+                  <p className="font-mono text-[10px] uppercase tracking-wide text-ink-soft mb-1">
+                    {label} · {dateLabel}
+                  </p>
+                  {dayEvents.length === 0 ? (
+                    <p className="text-xs text-ink-soft/60">Nothing scheduled.</p>
+                  ) : (
+                    <ul className="space-y-0.5">
+                      {dayEvents.map((ev) => (
+                        <li key={ev.id} className="text-sm flex items-baseline gap-2">
+                          {ev.time && <span className="font-mono text-xs text-harbor shrink-0">{ev.time.slice(0, 5)}</span>}
+                          <span className="truncate">{ev.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+
       case 'notes':
         return (
           <div>
@@ -621,6 +722,11 @@ export default function Dashboard() {
         Open Calendar
       </Link>
     ),
+    agenda: (
+      <Link to="/calendar" className="text-xs text-harbor hover:underline">
+        Open Calendar
+      </Link>
+    ),
   };
 
   return (
@@ -628,7 +734,7 @@ export default function Dashboard() {
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-1">
         {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
       </p>
-      <h1 className="font-display text-3xl mb-6">Copenhagen Chapter</h1>
+      <h1 className="font-display text-3xl mb-6">CPH Project</h1>
 
       {staleContacts.length > 0 && (
         <Link
@@ -657,15 +763,26 @@ export default function Dashboard() {
       )}
 
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-ink-soft">Drag any card's handle to reorder. Resize or hide widgets from Settings.</p>
+        <p className="text-xs text-ink-soft">
+          Drag a handle to reorder, the right edge to resize.{' '}
+          {layoutMode === 'scroll' ? 'Scroll horizontally for more.' : ''} Change layout from Settings.
+        </p>
         <Link to="/settings" className="text-xs text-harbor hover:underline">
           Customize
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className={layoutMode === 'scroll' ? 'flex flex-nowrap gap-4 overflow-x-auto pb-3' : 'flex flex-wrap gap-4'}>
         {visibleOrder.map((id, i) => {
           const size = settings?.dashboard_widget_size?.[id] ?? DEFAULT_WIDGET_SIZE[id];
+          const widthClass =
+            layoutMode === 'scroll'
+              ? size === 'half'
+                ? 'w-[360px] shrink-0'
+                : 'w-[640px] shrink-0'
+              : size === 'half'
+                ? 'w-full md:w-[calc(50%-0.5rem)]'
+                : 'w-full';
           return (
             <WidgetCard
               key={id}
@@ -675,8 +792,9 @@ export default function Dashboard() {
               onDragStart={setWidgetDragIndex}
               onDrop={handleWidgetDrop}
               onDragEnd={() => setWidgetDragIndex(null)}
+              onResize={(grow) => handleResize(id, size, grow)}
               right={widgetRight[id]}
-              widthClass={size === 'half' ? 'w-full md:w-[calc(50%-0.5rem)]' : 'w-full'}
+              widthClass={widthClass}
             >
               {widgetBody(id)}
             </WidgetCard>
