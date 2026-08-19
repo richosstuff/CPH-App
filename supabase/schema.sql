@@ -261,18 +261,33 @@ create table if not exists notes (
   position int not null default 0
 );
 
--- One row per user: accent color, avatar, and the drag-to-reorder layout choices
--- for the sidebar nav and the Dashboard's widget stack.
+-- Multiple events allowed per date — unlike calendar_days (one row per date), this is not unique.
+create table if not exists calendar_events (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  date date not null,
+  label text not null
+);
+
+-- One row per user: accent color, avatar, display name, font choice, and the
+-- drag-to-reorder layout choices for the sidebar nav and the Dashboard's widget stack.
 create table if not exists user_settings (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
   accent_color text,
   avatar_data_url text,
+  display_name text,
+  font_preset text,
   nav_order jsonb,
   dashboard_widget_order jsonb,
   dashboard_widget_visibility jsonb,
+  dashboard_widget_size jsonb,
   unique (user_id)
 );
+-- Upgrade path for databases that already had `user_settings` before these existed.
+alter table user_settings add column if not exists display_name text;
+alter table user_settings add column if not exists font_preset text;
+alter table user_settings add column if not exists dashboard_widget_size jsonb;
 
 -- Row Level Security: every table is private to the row's own user_id.
 -- This is the piece that vibe-coded apps most often skip — without it,
@@ -300,6 +315,7 @@ alter table exchange_rates enable row level security;
 alter table todos enable row level security;
 alter table calendar_categories enable row level security;
 alter table calendar_days enable row level security;
+alter table calendar_events enable row level security;
 alter table notes enable row level security;
 alter table user_settings enable row level security;
 
@@ -351,6 +367,8 @@ drop policy if exists "own rows only" on calendar_categories;
 create policy "own rows only" on calendar_categories for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on calendar_days;
 create policy "own rows only" on calendar_days for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on calendar_events;
+create policy "own rows only" on calendar_events for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on notes;
 create policy "own rows only" on notes for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on user_settings;

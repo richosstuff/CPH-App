@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { CalendarCategory, CalendarDay } from '../lib/types';
+import type { CalendarCategory, CalendarDay, CalendarEvent } from '../lib/types';
 import { WEEKDAY_LABELS, toLocalISO, monthGridDays } from '../lib/dateUtils';
 import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 
@@ -11,11 +11,14 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const [categories, setCategories] = useState<CalendarCategory[]>([]);
   const [days, setDays] = useState<CalendarDay[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewDate, setViewDate] = useState(() => new Date());
   const [dragCategoryId, setDragCategoryId] = useState<string | null>(null);
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#2d6e7e');
+  const [addingEventFor, setAddingEventFor] = useState<string | null>(null);
+  const [newEventText, setNewEventText] = useState('');
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -27,12 +30,14 @@ export default function CalendarPage() {
 
   async function load() {
     setLoading(true);
-    const [{ data: catData }, { data: dayData }] = await Promise.all([
+    const [{ data: catData }, { data: dayData }, { data: eventData }] = await Promise.all([
       supabase.from('calendar_categories').select('*').eq('user_id', user!.id),
       supabase.from('calendar_days').select('*').eq('user_id', user!.id),
+      supabase.from('calendar_events').select('*').eq('user_id', user!.id),
     ]);
     setCategories(catData ?? []);
     setDays(dayData ?? []);
+    setEvents(eventData ?? []);
     setLoading(false);
   }
 
@@ -55,37 +60,36 @@ export default function CalendarPage() {
     await supabase.from('calendar_categories').delete().eq('id', id);
   }
 
-  async function upsertDay(iso: string, patch: { category_id?: string | null; label?: string | null }) {
+  async function paintDay(iso: string, categoryId: string | null) {
     const existing = days.find((d) => d.date === iso);
-    const merged = {
-      category_id: existing?.category_id ?? null,
-      label: existing?.label ?? null,
-      ...patch,
-    };
-    if (!merged.category_id && !merged.label) {
-      if (existing) {
-        setDays((prev) => prev.filter((d) => d.id !== existing.id));
-        await supabase.from('calendar_days').delete().eq('id', existing.id);
-      }
-      return;
-    }
+    if (existing?.category_id === categoryId) return; // already painted this color — skip the redundant write
     if (existing) {
-      setDays((prev) => prev.map((d) => (d.id === existing.id ? { ...d, ...merged } : d)));
-      await supabase.from('calendar_days').update(merged).eq('id', existing.id);
-    } else {
+      setDays((prev) => prev.map((d) => (d.id === existing.id ? { ...d, category_id: categoryId } : d)));
+      await supabase.from('calendar_days').update({ category_id: categoryId }).eq('id', existing.id);
+    } else if (categoryId) {
       const { data } = await supabase
         .from('calendar_days')
-        .insert({ user_id: user!.id, date: iso, ...merged })
+        .insert({ user_id: user!.id, date: iso, category_id: categoryId, label: null })
         .select()
         .single();
       if (data) setDays((prev) => [...prev, data]);
     }
   }
 
-  function handleDrop(iso: string) {
-    if (!dragCategoryId) return;
-    void upsertDay(iso, { category_id: dragCategoryId === CLEAR ? null : dragCategoryId });
-    setDragCategoryId(null);
+  async function addEvent(iso: string) {
+    if (!newEventText.trim()) return;
+    const { data } = await supabase
+      .from('calendar_events')
+      .insert({ user_id: user!.id, date: iso, label: newEventText.trim() })
+      .select()
+      .single();
+    if (data) setEvents((prev) => [...prev, data]);
+    setNewEventText('');
+  }
+
+  async function removeEvent(id: string) {
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    await supabase.from('calendar_events').delete().eq('id', id);
   }
 
   if (loading) return <p className="text-ink-soft">Loading…</p>;
@@ -109,10 +113,12 @@ export default function CalendarPage() {
           </button>
         </div>
       </div>
-      <p className="text-ink-soft mb-4 text-sm">Drag a category onto a day to color it. Type directly on a day to label it.</p>
+      <p className="text-ink-soft mb-4 text-sm">
+        Drag a category across as many days as you like to color them. Use "+ event" on a day to add a written note.
+      </p>
 
       <div className="border border-line rounded-sm bg-white p-4 mb-4">
-        <p className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-2">Categories — drag onto a day</p>
+        <p className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-2">Categories — drag onto the days you want colored</p>
         <div className="flex flex-wrap items-center gap-2 mb-3">
           {categories.map((c) => (
             <span
@@ -177,30 +183,73 @@ export default function CalendarPage() {
             const entry = daysByDate.get(iso);
             const category = entry?.category_id ? categories.find((c) => c.id === entry.category_id) : undefined;
             const isToday = iso === toLocalISO(new Date());
+            const dayEvents = events.filter((e) => e.date === iso);
             return (
               <div
                 key={iso}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop(iso)}
-                className={`border-r border-b border-line last:border-r-0 p-1.5 min-h-[78px] flex flex-col ${
+                onDragEnter={() => {
+                  if (dragCategoryId) void paintDay(iso, dragCategoryId === CLEAR ? null : dragCategoryId);
+                }}
+                onDrop={(e) => e.preventDefault()}
+                className={`border-r border-b border-line last:border-r-0 p-1.5 min-h-[86px] flex flex-col ${
                   inMonth ? '' : 'opacity-35'
                 }`}
-                style={{ backgroundColor: category ? `${category.color}22` : undefined }}
+                style={{ backgroundColor: category ? category.color : undefined }}
               >
-                <span className={`font-mono text-[10px] ${isToday ? 'text-harbor font-bold' : 'text-ink-soft'}`}>
+                <span
+                  className={`font-mono text-[10px] ${
+                    isToday ? `font-bold ${category ? 'text-white' : 'text-harbor'}` : category ? 'text-white/90' : 'text-ink-soft'
+                  }`}
+                >
                   {d.getDate()}
                 </span>
-                {category && (
-                  <span className="text-[9px] font-mono truncate mt-0.5" style={{ color: category.color }}>
-                    {category.name}
-                  </span>
+
+                <div className="mt-0.5 flex-1 min-h-0 overflow-y-auto space-y-0.5">
+                  {dayEvents.map((ev) => (
+                    <div key={ev.id} className="group/event flex items-center justify-between gap-1">
+                      <span className={`text-[9px] truncate leading-tight ${category ? 'text-white' : 'text-ink'}`}>{ev.label}</span>
+                      <button
+                        onClick={() => void removeEvent(ev.id)}
+                        className={`opacity-0 group-hover/event:opacity-100 shrink-0 ${category ? 'text-white/80 hover:text-white' : 'text-ink-soft hover:text-rust'}`}
+                        aria-label="Remove event"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {addingEventFor === iso ? (
+                  <input
+                    autoFocus
+                    value={newEventText}
+                    onChange={(e) => setNewEventText(e.target.value)}
+                    onBlur={() => {
+                      void addEvent(iso);
+                      setAddingEventFor(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void addEvent(iso);
+                      if (e.key === 'Escape') {
+                        setNewEventText('');
+                        setAddingEventFor(null);
+                      }
+                    }}
+                    placeholder="Event…"
+                    className={`w-full bg-white/80 outline-none text-[9px] px-1 py-0.5 rounded-sm mt-0.5 ${category ? '' : 'border border-line'}`}
+                  />
+                ) : (
+                  <button
+                    onClick={() => {
+                      setAddingEventFor(iso);
+                      setNewEventText('');
+                    }}
+                    className={`text-[9px] text-left mt-0.5 ${category ? 'text-white/70 hover:text-white' : 'text-ink-soft/50 hover:text-harbor'}`}
+                  >
+                    + event
+                  </button>
                 )}
-                <input
-                  value={entry?.label ?? ''}
-                  onChange={(e) => void upsertDay(iso, { label: e.target.value || null })}
-                  className="mt-auto w-full bg-transparent outline-none text-[10px] px-0.5 py-0.5 rounded-sm focus:bg-white/70 leading-tight"
-                  placeholder=""
-                />
               </div>
             );
           })}

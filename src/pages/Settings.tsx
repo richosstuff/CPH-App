@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { UserSettings, DashboardWidgetId } from '../lib/types';
-import { DASHBOARD_WIDGET_IDS } from '../lib/types';
+import type { UserSettings, DashboardWidgetId, DashboardWidgetSize } from '../lib/types';
+import { DASHBOARD_WIDGET_IDS, DEFAULT_WIDGET_SIZE } from '../lib/types';
 import { orderNavItems } from '../lib/navConfig';
 import { reorder } from '../lib/dragReorder';
 import { applyAccentColor } from '../lib/colorUtils';
 import { fileToAvatarDataUrl } from '../lib/imageUtils';
+import { FONT_PRESETS, applyFontPreset } from '../lib/fontPresets';
 import { GripVertical } from 'lucide-react';
 
 const WIDGET_LABELS: Record<DashboardWidgetId, string> = {
@@ -25,9 +26,12 @@ const EMPTY_SETTINGS: UserSettings = {
   user_id: '',
   accent_color: null,
   avatar_data_url: null,
+  display_name: null,
+  font_preset: null,
   nav_order: null,
   dashboard_widget_order: null,
   dashboard_widget_visibility: null,
+  dashboard_widget_size: null,
 };
 
 export default function Settings() {
@@ -58,9 +62,12 @@ export default function Settings() {
           user_id: user!.id,
           accent_color: merged.accent_color,
           avatar_data_url: merged.avatar_data_url,
+          display_name: merged.display_name,
+          font_preset: merged.font_preset,
           nav_order: merged.nav_order,
           dashboard_widget_order: merged.dashboard_widget_order,
           dashboard_widget_visibility: merged.dashboard_widget_visibility,
+          dashboard_widget_size: merged.dashboard_widget_size,
           id: settings.id || undefined,
         },
         { onConflict: 'user_id' }
@@ -69,6 +76,7 @@ export default function Settings() {
       .single();
     if (data) setSettings(data);
     if ('accent_color' in patch) applyAccentColor(patch.accent_color ?? null);
+    if ('font_preset' in patch) applyFontPreset(patch.font_preset ?? null);
   }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -110,7 +118,7 @@ export default function Settings() {
             <img src={settings.avatar_data_url} alt="" className="w-16 h-16 rounded-full object-cover border border-line" />
           ) : (
             <div className="w-16 h-16 rounded-full bg-paper-dim border border-line flex items-center justify-center font-mono text-lg text-ink-soft">
-              {(user?.email ?? '?')[0].toUpperCase()}
+              {(settings.display_name || user?.email || '?')[0].toUpperCase()}
             </div>
           )}
           <div>
@@ -129,7 +137,18 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <label className="block mb-5 max-w-xs">
+          <span className="block font-mono text-[10px] uppercase text-ink-soft mb-1">Display name</span>
+          <input
+            value={settings.display_name ?? ''}
+            onChange={(e) => void save({ display_name: e.target.value || null })}
+            placeholder={user?.email ?? ''}
+            className="w-full border border-line rounded-sm px-2 py-1.5 text-sm outline-none focus:border-harbor"
+          />
+          <span className="block text-xs text-ink-soft mt-1">Shown next to your photo in the top corner.</span>
+        </label>
+
+        <div className="flex items-center gap-3 mb-5">
           <input
             type="color"
             value={settings.accent_color ?? '#2d6e7e'}
@@ -142,6 +161,26 @@ export default function Settings() {
               Reset to default
             </button>
           )}
+        </div>
+
+        <div>
+          <span className="block font-mono text-[10px] uppercase text-ink-soft mb-1.5">Typeface</span>
+          <div className="flex flex-wrap gap-2">
+            {FONT_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => void save({ font_preset: preset.id === 'editorial' ? null : preset.id })}
+                style={{ fontFamily: preset.display }}
+                className={`px-3 py-1.5 rounded-sm text-sm border ${
+                  (settings.font_preset ?? 'editorial') === preset.id
+                    ? 'border-harbor bg-harbor/10 text-harbor-dark'
+                    : 'border-line text-ink-soft hover:border-harbor'
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -182,20 +221,36 @@ export default function Settings() {
         <div>
           {DASHBOARD_WIDGET_IDS.map((id) => {
             const visible = settings.dashboard_widget_visibility?.[id] !== false;
+            const size = settings.dashboard_widget_size?.[id] ?? DEFAULT_WIDGET_SIZE[id];
             return (
-              <label key={id} className="flex items-center gap-2.5 py-1.5 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={visible}
-                  onChange={(e) =>
-                    void save({
-                      dashboard_widget_visibility: { ...settings.dashboard_widget_visibility, [id]: e.target.checked },
-                    })
-                  }
-                  className="accent-harbor w-4 h-4"
-                />
-                {WIDGET_LABELS[id]}
-              </label>
+              <div key={id} className="flex items-center justify-between py-1.5">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={visible}
+                    onChange={(e) =>
+                      void save({
+                        dashboard_widget_visibility: { ...settings.dashboard_widget_visibility, [id]: e.target.checked },
+                      })
+                    }
+                    className="accent-harbor w-4 h-4"
+                  />
+                  {WIDGET_LABELS[id]}
+                </label>
+                <div className="flex items-center gap-1 font-mono text-[10px]">
+                  {(['half', 'full'] as DashboardWidgetSize[]).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => void save({ dashboard_widget_size: { ...settings.dashboard_widget_size, [id]: s } })}
+                      className={`px-2 py-0.5 rounded-sm ${
+                        size === s ? 'bg-harbor text-white' : 'text-ink-soft hover:bg-paper-dim'
+                      }`}
+                    >
+                      {s === 'half' ? 'Half' : 'Full'}
+                    </button>
+                  ))}
+                </div>
+              </div>
             );
           })}
         </div>

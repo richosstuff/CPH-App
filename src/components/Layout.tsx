@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 import type { UserSettings } from '../lib/types';
 import { orderNavItems } from '../lib/navConfig';
 import { applyAccentColor } from '../lib/colorUtils';
+import { applyFontPreset } from '../lib/fontPresets';
+import SearchBar from './SearchBar';
 
 export default function Layout() {
   const { signOut, user } = useAuth();
@@ -26,6 +28,7 @@ export default function Layout() {
       .then(({ data }) => {
         setSettings(data ?? null);
         applyAccentColor(data?.accent_color ?? null);
+        applyFontPreset(data?.font_preset ?? null);
       });
   }, [user, location.pathname]);
 
@@ -35,8 +38,8 @@ export default function Layout() {
     <div className="min-h-screen bg-paper flex">
       <aside className="w-56 shrink-0 border-r border-line flex flex-col justify-between py-6 px-4">
         <div>
-          <div className="flex items-center px-2 mb-8">
-            <Compass className="w-6 h-6 text-harbor" strokeWidth={1.5} />
+          <div className="flex items-center justify-center py-3 mb-6 border-b border-line">
+            <Compass className="w-8 h-8 text-harbor" strokeWidth={1.5} />
           </div>
 
           <nav className="relative pl-3">
@@ -77,17 +80,21 @@ export default function Layout() {
       </aside>
 
       <main className="flex-1 px-8 py-8 max-w-5xl">
-        <div className="flex justify-end mb-4">
-          <Link to="/settings" aria-label="Settings">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <SearchBar />
+          <Link to="/settings" aria-label="Settings" className="flex items-center gap-2.5 shrink-0 group">
+            {settings?.display_name && (
+              <span className="text-sm text-ink-soft group-hover:text-ink transition-colors">{settings.display_name}</span>
+            )}
             {settings?.avatar_data_url ? (
               <img
                 src={settings.avatar_data_url}
                 alt=""
-                className="w-9 h-9 rounded-full object-cover border border-line hover:border-harbor transition-colors"
+                className="w-14 h-14 rounded-full object-cover border border-line group-hover:border-harbor transition-colors"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-paper-dim border border-line hover:border-harbor transition-colors flex items-center justify-center font-mono text-xs text-ink-soft">
-                {(user?.email ?? '?')[0].toUpperCase()}
+              <div className="w-14 h-14 rounded-full bg-paper-dim border border-line group-hover:border-harbor transition-colors flex items-center justify-center font-mono text-base text-ink-soft">
+                {(settings?.display_name || user?.email || '?')[0].toUpperCase()}
               </div>
             )}
           </Link>

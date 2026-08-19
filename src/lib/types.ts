@@ -276,6 +276,14 @@ export interface Note {
   position: number;
 }
 
+/** Multiple allowed per date, unlike CalendarDay which is one row per date. */
+export interface CalendarEvent {
+  id: string;
+  user_id: string;
+  date: string; // ISO date
+  label: string;
+}
+
 export const DASHBOARD_WIDGET_IDS = [
   'kpis',
   'this-week',
@@ -288,12 +296,29 @@ export const DASHBOARD_WIDGET_IDS = [
 ] as const;
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number];
 
+export type DashboardWidgetSize = 'full' | 'half';
+
+/** Sensible default layout: the KPI grid and the notes board get a full row, everything else pairs up. */
+export const DEFAULT_WIDGET_SIZE: Record<DashboardWidgetId, DashboardWidgetSize> = {
+  kpis: 'full',
+  'this-week': 'half',
+  priorities: 'half',
+  todos: 'half',
+  calendar: 'half',
+  notes: 'full',
+  'net-worth-trend': 'half',
+  'spending-breakdown': 'half',
+};
+
 export interface UserSettings {
   id: string;
   user_id: string;
   accent_color: string | null; // hex; null = default theme color
   avatar_data_url: string | null;
+  display_name: string | null;
+  font_preset: string | null; // id from FONT_PRESETS; null = default
   nav_order: string[] | null; // ordered list of route paths; null = default order
   dashboard_widget_order: DashboardWidgetId[] | null; // null = default order
   dashboard_widget_visibility: Partial<Record<DashboardWidgetId, boolean>> | null; // missing key = visible
+  dashboard_widget_size: Partial<Record<DashboardWidgetId, DashboardWidgetSize>> | null; // missing key = DEFAULT_WIDGET_SIZE
 }

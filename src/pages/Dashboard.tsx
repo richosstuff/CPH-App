@@ -23,7 +23,7 @@ import type {
   UserSettings,
   DashboardWidgetId,
 } from '../lib/types';
-import { DASHBOARD_WIDGET_IDS } from '../lib/types';
+import { DASHBOARD_WIDGET_IDS, DEFAULT_WIDGET_SIZE } from '../lib/types';
 import {
   daysUntil,
   daysSince,
@@ -52,6 +52,7 @@ function WidgetCard({
   onDrop,
   onDragEnd,
   right,
+  widthClass,
   children,
 }: {
   title: string;
@@ -61,13 +62,14 @@ function WidgetCard({
   onDrop: (i: number) => void;
   onDragEnd: () => void;
   right?: ReactNode;
+  widthClass: string;
   children: ReactNode;
 }) {
   return (
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={() => onDrop(index)}
-      className={`border border-line rounded-sm bg-white p-5 mb-4 transition-opacity ${dragIndex === index ? 'opacity-40' : ''}`}
+      className={`${widthClass} border border-line rounded-sm bg-white p-5 transition-opacity ${dragIndex === index ? 'opacity-40' : ''}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -655,26 +657,32 @@ export default function Dashboard() {
       )}
 
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-ink-soft">Drag any card's handle to reorder. Hide widgets from Settings.</p>
+        <p className="text-xs text-ink-soft">Drag any card's handle to reorder. Resize or hide widgets from Settings.</p>
         <Link to="/settings" className="text-xs text-harbor hover:underline">
           Customize
         </Link>
       </div>
 
-      {visibleOrder.map((id, i) => (
-        <WidgetCard
-          key={id}
-          title={widgetTitles[id]}
-          index={i}
-          dragIndex={widgetDragIndex}
-          onDragStart={setWidgetDragIndex}
-          onDrop={handleWidgetDrop}
-          onDragEnd={() => setWidgetDragIndex(null)}
-          right={widgetRight[id]}
-        >
-          {widgetBody(id)}
-        </WidgetCard>
-      ))}
+      <div className="flex flex-wrap gap-4">
+        {visibleOrder.map((id, i) => {
+          const size = settings?.dashboard_widget_size?.[id] ?? DEFAULT_WIDGET_SIZE[id];
+          return (
+            <WidgetCard
+              key={id}
+              title={widgetTitles[id]}
+              index={i}
+              dragIndex={widgetDragIndex}
+              onDragStart={setWidgetDragIndex}
+              onDrop={handleWidgetDrop}
+              onDragEnd={() => setWidgetDragIndex(null)}
+              right={widgetRight[id]}
+              widthClass={size === 'half' ? 'w-full md:w-[calc(50%-0.5rem)]' : 'w-full'}
+            >
+              {widgetBody(id)}
+            </WidgetCard>
+          );
+        })}
+      </div>
     </div>
   );
 }
