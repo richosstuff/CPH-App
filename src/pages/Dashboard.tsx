@@ -774,7 +774,9 @@ export default function Dashboard() {
 
       <div
         className={
-          layoutMode === 'scroll' ? 'grid grid-flow-col grid-rows-2 gap-4 overflow-x-auto pb-3' : 'flex flex-wrap gap-4'
+          layoutMode === 'scroll'
+            ? 'grid grid-flow-col grid-rows-[auto_auto] items-start gap-4 overflow-x-auto pb-3'
+            : 'flex flex-wrap gap-4'
         }
       >
         {visibleOrder.map((id, i) => {

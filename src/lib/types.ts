@@ -284,6 +284,23 @@ export interface MealIdeaItem {
   notes: string | null;
 }
 
+/** A named bundle of existing meal ideas (e.g. "Week of quick meals") — references them, doesn't duplicate their ingredients. */
+export interface MealPlan {
+  id: string;
+  user_id: string;
+  name: string;
+  notes: string | null;
+  position: number;
+}
+
+export interface MealPlanItem {
+  id: string;
+  user_id: string;
+  meal_plan_id: string;
+  meal_idea_id: string;
+  position: number;
+}
+
 export interface CalendarCategory {
   id: string;
   user_id: string;

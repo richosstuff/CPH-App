@@ -246,6 +246,7 @@ export default function CalendarPage() {
             const entry = daysByDate.get(iso);
             const category = entry?.category_id ? categories.find((c) => c.id === entry.category_id) : undefined;
             const isToday = iso === toLocalISO(new Date());
+            const isPast = iso < toLocalISO(new Date());
             const dayEvents = sortDayEvents(events.filter((e) => e.date === iso));
             return (
               <div
@@ -256,11 +257,17 @@ export default function CalendarPage() {
                 }}
                 onDrop={(e) => e.preventDefault()}
                 onClick={() => handleDayClick(iso)}
-                className={`border-r border-b border-line last:border-r-0 p-1.5 min-h-[92px] flex flex-col ${
+                className={`relative border-r border-b border-line last:border-r-0 p-1.5 min-h-[92px] flex flex-col ${
                   inMonth ? '' : 'opacity-35'
                 } ${armedCategoryId ? 'cursor-pointer hover:ring-1 hover:ring-inset hover:ring-harbor' : ''}`}
                 style={{ backgroundColor: category ? category.color : undefined }}
               >
+                {isPast && (
+                  <X
+                    className={`absolute inset-0 m-auto w-8 h-8 pointer-events-none ${category ? 'text-black/10' : 'text-ink-soft/15'}`}
+                    strokeWidth={1.5}
+                  />
+                )}
                 <span
                   className={`font-mono text-[10px] ${
                     isToday ? `font-bold ${category ? 'text-white' : 'text-harbor'}` : category ? 'text-white/90' : 'text-ink-soft'

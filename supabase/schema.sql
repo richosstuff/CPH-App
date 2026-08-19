@@ -274,6 +274,23 @@ create table if not exists meal_idea_items (
   notes text
 );
 
+-- A named bundle of existing meal ideas — references them via meal_plan_items, doesn't duplicate ingredients.
+create table if not exists meal_plans (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  notes text,
+  position int not null default 0
+);
+
+create table if not exists meal_plan_items (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  meal_plan_id uuid not null references meal_plans(id) on delete cascade,
+  meal_idea_id uuid not null references meal_ideas(id) on delete cascade,
+  position int not null default 0
+);
+
 create table if not exists calendar_categories (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -360,6 +377,8 @@ alter table exchange_rates enable row level security;
 alter table todos enable row level security;
 alter table meal_ideas enable row level security;
 alter table meal_idea_items enable row level security;
+alter table meal_plans enable row level security;
+alter table meal_plan_items enable row level security;
 alter table calendar_categories enable row level security;
 alter table calendar_days enable row level security;
 alter table calendar_events enable row level security;
@@ -416,6 +435,10 @@ drop policy if exists "own rows only" on meal_ideas;
 create policy "own rows only" on meal_ideas for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on meal_idea_items;
 create policy "own rows only" on meal_idea_items for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on meal_plans;
+create policy "own rows only" on meal_plans for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on meal_plan_items;
+create policy "own rows only" on meal_plan_items for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on calendar_categories;
 create policy "own rows only" on calendar_categories for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on calendar_days;
