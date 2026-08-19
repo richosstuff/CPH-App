@@ -127,3 +127,120 @@ export interface ScheduleBlock {
   category: ScheduleCategory;
   location: string | null;
 }
+
+export type Currency = 'DKK' | 'EUR' | 'GBP' | 'USD' | 'SEK';
+
+export type ExpenseCategory =
+  | 'Food & Groceries'
+  | 'Housing'
+  | 'Transport'
+  | 'Education & Books'
+  | 'Sport & Gym'
+  | 'Going Out'
+  | 'Travel'
+  | 'Subscriptions'
+  | 'Other';
+
+export interface Expense {
+  id: string;
+  user_id: string;
+  date: string; // ISO date
+  description: string;
+  amount: number;
+  currency: Currency;
+  amount_dkk: number;
+  category: ExpenseCategory;
+  label: string | null;
+}
+
+export type AssetType = 'Bank account' | 'ETF or Index fund' | 'Crypto' | 'Cash' | 'Other';
+
+export interface Asset {
+  id: string;
+  user_id: string;
+  name: string;
+  type: AssetType;
+  institution: string | null;
+  currency: Currency;
+  balance: number;
+  last_updated: string | null; // ISO date
+  notes: string | null;
+}
+
+export interface Liability {
+  id: string;
+  user_id: string;
+  name: string;
+  amount: number;
+  currency: Currency;
+  last_updated: string | null; // ISO date
+}
+
+export type FinancialGoalStatus = 'On track' | 'Behind' | 'Achieved';
+
+export interface FinancialGoal {
+  id: string;
+  user_id: string;
+  name: string;
+  target_amount: number;
+  target_date: string | null; // ISO date
+  current_amount: number;
+  linked_pot_id: string | null;
+  notes: string | null;
+  status: FinancialGoalStatus;
+}
+
+export type LifeGoalDomain =
+  | 'Financial'
+  | 'Academic'
+  | 'Physical'
+  | 'Social & Relationships'
+  | 'Career'
+  | 'Personal';
+
+export type LifeGoalStatus = 'Active' | 'Achieved' | 'Paused';
+
+export interface LifeGoal {
+  id: string;
+  user_id: string;
+  domain: LifeGoalDomain;
+  dream: string;
+  measurable_target: string;
+  daily_system: string;
+  next_checkpoint: string | null;
+  next_checkpoint_date: string | null; // ISO date — drives the Dashboard's 30-day proximity alert
+  progress_pct: number;
+  linked_financial_goal_id: string | null;
+  status: LifeGoalStatus;
+}
+
+export interface NetWorthSnapshot {
+  id: string;
+  user_id: string;
+  month: string; // ISO date, first of month
+  net_worth_dkk: number;
+}
+
+export interface ExchangeRate {
+  id: string;
+  user_id: string;
+  currency: Currency;
+  rate_to_dkk: number;
+}
+
+export type TransactionType = 'Expense' | 'Income';
+
+export type IncomeCategory = 'Salary' | 'SU (Student Grant)' | 'Freelance' | 'Gift' | 'Other';
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  date: string; // ISO date
+  type: TransactionType;
+  description: string;
+  amount: number;
+  currency: Currency;
+  amount_dkk: number;
+  category: string; // one of EXPENSE_CATEGORIES when type is 'Expense', IncomeCategory when 'Income'
+  label: string | null;
+}

@@ -1,5 +1,12 @@
 import { supabase } from './supabase';
-import { PHASE_SEED, DEFAULT_HABITS, DEFAULT_APPLICATIONS, DEFAULT_SCHEDULE_BLOCKS } from './seedData';
+import {
+  PHASE_SEED,
+  DEFAULT_HABITS,
+  DEFAULT_APPLICATIONS,
+  DEFAULT_SCHEDULE_BLOCKS,
+  DEFAULT_EXCHANGE_RATES,
+  DEFAULT_LIFE_GOALS,
+} from './seedData';
 
 /**
  * Runs once per new user (checked by row count, not a flag) to populate
@@ -82,5 +89,25 @@ export async function seedIfEmpty(userId: string) {
   if (!scheduleCount) {
     const blocks = DEFAULT_SCHEDULE_BLOCKS.map((block) => ({ ...block, user_id: userId }));
     await supabase.from('schedule_blocks').insert(blocks);
+  }
+
+  const { count: rateCount } = await supabase
+    .from('exchange_rates')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (!rateCount) {
+    const rates = DEFAULT_EXCHANGE_RATES.map((rate) => ({ ...rate, user_id: userId }));
+    await supabase.from('exchange_rates').insert(rates);
+  }
+
+  const { count: lifeGoalCount } = await supabase
+    .from('life_goals')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (!lifeGoalCount) {
+    const goals = DEFAULT_LIFE_GOALS.map((goal) => ({ ...goal, user_id: userId, progress_pct: 0 }));
+    await supabase.from('life_goals').insert(goals);
   }
 }

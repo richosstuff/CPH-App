@@ -7,6 +7,7 @@ import Network from './pages/Network';
 import Habits from './pages/Habits';
 import Jobs from './pages/Jobs';
 import Finance from './pages/Finance';
+import Goals from './pages/Goals';
 import Meals from './pages/Meals';
 import Schedule from './pages/Schedule';
 
@@ -31,6 +32,7 @@ function Gate() {
         <Route path="/habits" element={<Habits />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/finance" element={<Finance />} />
+        <Route path="/goals" element={<Goals />} />
         <Route path="/meals" element={<Meals />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="*" element={<Navigate to="/" replace />} />

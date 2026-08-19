@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Compass, LayoutDashboard, Users, CheckSquare, Briefcase, Wallet, Utensils, Calendar, LogOut } from 'lucide-react';
+import { Compass, LayoutDashboard, Users, CheckSquare, Briefcase, Wallet, Target, Utensils, Calendar, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
@@ -8,6 +8,7 @@ const NAV = [
   { to: '/habits', label: 'Habits', icon: CheckSquare },
   { to: '/jobs', label: 'Jobs', icon: Briefcase },
   { to: '/finance', label: 'Finance', icon: Wallet },
+  { to: '/goals', label: 'Goals', icon: Target },
   { to: '/meals', label: 'Meals', icon: Utensils },
   { to: '/schedule', label: 'Schedule', icon: Calendar },
 ];

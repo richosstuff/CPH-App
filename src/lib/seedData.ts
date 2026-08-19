@@ -1,4 +1,4 @@
-import type { ApplicationStatus, ScheduleCategory } from './types';
+import type { ApplicationStatus, ScheduleCategory, Currency, LifeGoalDomain, LifeGoalStatus } from './types';
 
 export interface PhaseSeed {
   phase_number: number;
@@ -171,4 +171,50 @@ export const FINANCE_MODEL_BANDS = [
   { label: 'Feb–Jun 2027', low: 9450, high: 12600 },
   { label: 'Summer 2027', low: 12600, high: 16000 },
   { label: 'Aug 2027–Jun 2028', low: 10000, high: 13000 },
+];
+
+/** Starting exchange rates — approximate, the user updates these to current rates from the Expenses tab. */
+export const DEFAULT_EXCHANGE_RATES: { currency: Exclude<Currency, 'DKK'>; rate_to_dkk: number }[] = [
+  { currency: 'EUR', rate_to_dkk: 7.46 },
+  { currency: 'USD', rate_to_dkk: 6.9 },
+  { currency: 'GBP', rate_to_dkk: 8.7 },
+  { currency: 'SEK', rate_to_dkk: 0.66 },
+];
+
+export const DEFAULT_LIFE_GOALS: {
+  domain: LifeGoalDomain;
+  dream: string;
+  measurable_target: string;
+  daily_system: string;
+  next_checkpoint: string;
+  next_checkpoint_date: string;
+  status: LifeGoalStatus;
+}[] = [
+  {
+    domain: 'Financial',
+    dream: 'Own a home in Portugal near Oeiras',
+    measurable_target: 'Save 80,000 DKK in 24 months',
+    daily_system: '40-50% savings rate from Phase 3 onward',
+    next_checkpoint: '10,000 DKK by Jan 2027',
+    next_checkpoint_date: '2027-01-31',
+    status: 'Active',
+  },
+  {
+    domain: 'Physical',
+    dream: 'Be genuinely fit and competitive in a team sport',
+    measurable_target: 'Play 10 competitive rugby matches or earn a martial arts grading by Aug 2028',
+    daily_system: 'Train twice a week minimum, every week',
+    next_checkpoint: 'First match or first grading by June 2027',
+    next_checkpoint_date: '2027-06-30',
+    status: 'Active',
+  },
+  {
+    domain: 'Career',
+    dream: 'Work as a PM or strategic lead on projects that matter, from Denmark or Portugal',
+    measurable_target: 'Graduate with a company-collaboration thesis and one post-grad offer in hand',
+    daily_system: 'Apply for 2 new relevant roles every month from Feb 2028',
+    next_checkpoint: 'Thesis topic confirmed with supervisor by Sept 2027',
+    next_checkpoint_date: '2027-09-30',
+    status: 'Active',
+  },
 ];

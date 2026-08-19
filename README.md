@@ -2,9 +2,13 @@
 
 A private, single-user dashboard for the 24-month Lisbon → Copenhagen relocation
 and DTU MSc plan: a Copenhagen network/contacts tracker, a weekly habit
-tracker, a job application tracker, a finance tracker compared against the
-plan's own illustrative income bands, a weekly meal + shopping list log (plan in Goma or wherever, jot down what
-you decided here), and a recurring weekly class/work/sport schedule.
+tracker, a job application tracker, a six-domain life goals tracker, a finance
+section (daily income/expense log with graphs, a month-by-month income &
+savings plan compared against the plan's own illustrative bands, and an
+investment/savings portfolio), a weekly meal + shopping list log (plan in
+Goma or wherever, jot down what you decided here), and a recurring weekly
+class/work/sport schedule. The Dashboard itself is a monitoring desk of the
+most important life and financial KPIs at a glance.
 
 Stack: React + TypeScript + Vite, Tailwind CSS v4, Supabase (Postgres + Auth),
 Recharts. No custom backend server — Supabase handles the database and login,
@@ -20,9 +24,11 @@ standalone app (Share → Add to Home Screen).
 2. Wait for the project to finish provisioning (~2 minutes).
 3. Open **SQL Editor** in the left sidebar → **New query**.
 4. Paste the entire contents of `supabase/schema.sql` (in this project) and
-   click **Run**. This creates all twelve tables and locks each one down with
-   Row Level Security, so only your own logged-in account can ever read or
-   write your rows.
+   click **Run**. This creates all the app's tables and locks each one down
+   with Row Level Security, so only your own logged-in account can ever read
+   or write your rows. The whole file is safe to paste and run again any time
+   the app adds new tables or columns — every statement is idempotent, so
+   re-running it only applies what's new and leaves existing data alone.
 5. Go to **Project Settings → API**. You'll need two values from this page in
    step 2 below:
    - **Project URL**

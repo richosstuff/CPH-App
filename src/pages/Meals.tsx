@@ -128,7 +128,10 @@ export default function Meals() {
           </button>
         </div>
       </div>
-      <p className="text-ink-soft mb-6 text-sm">Plan in Goma (or wherever) — this just logs what you decided.</p>
+      <p className="text-ink-soft mb-6 text-sm">
+        Plan in Goma (or wherever) — this just logs what you decided. Monday's batch-cooking day; Tuesday's the long
+        class day, so keep that one prep-ahead or under 10 minutes.
+      </p>
 
       <textarea
         value={week.notes}
