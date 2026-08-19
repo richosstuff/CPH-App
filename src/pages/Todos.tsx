@@ -5,11 +5,14 @@ import type { Todo } from '../lib/types';
 import { reorder } from '../lib/dragReorder';
 import { Plus, Trash2, Check, GripVertical } from 'lucide-react';
 
+type SortMode = 'manual' | 'deadline';
+
 export default function Todos() {
   const { user } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>('manual');
 
   useEffect(() => {
     if (!user) return;
@@ -26,7 +29,7 @@ export default function Todos() {
   async function addTodo() {
     const { data } = await supabase
       .from('todos')
-      .insert({ user_id: user!.id, text: '', is_done: false, position: todos.length })
+      .insert({ user_id: user!.id, text: '', is_done: false, position: todos.length, deadline_date: null })
       .select()
       .single();
     if (data) setTodos((prev) => [...prev, data]);
@@ -60,6 +63,11 @@ export default function Todos() {
 
   const openCount = todos.filter((t) => !t.is_done).length;
 
+  const displayed =
+    sortMode === 'deadline'
+      ? [...todos].sort((a, b) => (a.deadline_date ?? '9999-99-99').localeCompare(b.deadline_date ?? '9999-99-99'))
+      : todos;
+
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1">
@@ -68,24 +76,39 @@ export default function Todos() {
           {openCount} open · {todos.length} total
         </span>
       </div>
-      <p className="text-ink-soft mb-6 text-sm">Drag the handle to reorder.</p>
+      <div className="flex items-center gap-2 mb-6">
+        <p className="text-ink-soft text-sm">{sortMode === 'manual' ? 'Drag the handle to reorder.' : 'Sorted by deadline.'}</p>
+        <span className="flex items-center gap-1 font-mono text-xs ml-2">
+          {(['manual', 'deadline'] as SortMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setSortMode(m)}
+              className={`px-2 py-1 rounded-sm ${sortMode === m ? 'bg-harbor text-white' : 'text-ink-soft hover:bg-paper-dim'}`}
+            >
+              {m === 'manual' ? 'Manual order' : 'By deadline'}
+            </button>
+          ))}
+        </span>
+      </div>
 
       <div className="border border-line rounded-sm overflow-hidden bg-white">
         {todos.length === 0 && <p className="px-4 py-3 text-sm text-ink-soft">Nothing on the list yet.</p>}
-        {todos.map((todo, i) => (
+        {displayed.map((todo, i) => (
           <div
             key={todo.id}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => handleDrop(i)}
+            onDragOver={(e) => sortMode === 'manual' && e.preventDefault()}
+            onDrop={() => sortMode === 'manual' && handleDrop(i)}
             className={`flex items-center gap-2 px-2 py-1.5 border-b border-line last:border-0 group ${
               dragIndex === i ? 'opacity-40' : ''
             }`}
           >
             <span
-              draggable
+              draggable={sortMode === 'manual'}
               onDragStart={() => setDragIndex(i)}
               onDragEnd={() => setDragIndex(null)}
-              className="cursor-grab text-ink-soft/50 hover:text-ink-soft shrink-0"
+              className={`shrink-0 ${
+                sortMode === 'manual' ? 'cursor-grab text-ink-soft/50 hover:text-ink-soft' : 'text-ink-soft/15'
+              }`}
             >
               <GripVertical className="w-4 h-4" />
             </span>
@@ -105,6 +128,12 @@ export default function Todos() {
               className={`flex-1 px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 text-sm ${
                 todo.is_done ? 'line-through text-ink-soft' : ''
               }`}
+            />
+            <input
+              type="date"
+              value={todo.deadline_date ?? ''}
+              onChange={(e) => void updateTodo(todo.id, { deadline_date: e.target.value || null })}
+              className="w-[136px] shrink-0 px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs text-ink-soft"
             />
             <button
               onClick={() => void removeTodo(todo.id)}

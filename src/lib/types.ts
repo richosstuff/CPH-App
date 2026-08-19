@@ -35,13 +35,7 @@ export interface HabitEntry {
   completed: boolean;
 }
 
-export type ApplicationStatus =
-  | 'Not applied'
-  | 'Applied'
-  | 'Assessment'
-  | 'Interview'
-  | 'Offer'
-  | 'Rejected';
+export type ApplicationStatus = 'Not applied' | 'Applied/Assessment' | 'Interview' | 'Offer' | 'Rejected';
 
 export interface Application {
   id: string;
@@ -209,9 +203,25 @@ export interface LifeGoal {
   daily_system: string;
   next_checkpoint: string | null;
   next_checkpoint_date: string | null; // ISO date — drives the Dashboard's 30-day proximity alert
-  progress_pct: number;
+  progress_pct: number; // manual fallback — overridden by weighted GoalCheckpoints when any exist, or by the linked financial goal
   linked_financial_goal_id: string | null;
+  notes: string | null;
   status: LifeGoalStatus;
+}
+
+/**
+ * A weighted milestone toward a LifeGoal. When a goal has any checkpoints, its progress bar is
+ * derived from these instead of the manual slider: sum of weights where is_done, clamped to 100.
+ */
+export interface GoalCheckpoint {
+  id: string;
+  user_id: string;
+  life_goal_id: string;
+  label: string;
+  description: string | null;
+  weight: number; // contribution toward 100% progress when done
+  is_done: boolean;
+  position: number;
 }
 
 export interface NetWorthSnapshot {
@@ -251,6 +261,27 @@ export interface Todo {
   text: string;
   is_done: boolean;
   position: number;
+  deadline_date: string | null; // ISO date
+}
+
+/** A recipe/dish idea — not tied to any day or week. Its shopping list is MealIdeaItem rows. */
+export interface MealIdea {
+  id: string;
+  user_id: string;
+  name: string;
+  notes: string | null;
+  position: number;
+}
+
+export interface MealIdeaItem {
+  id: string;
+  user_id: string;
+  meal_idea_id: string;
+  item: string;
+  quantity: string | null;
+  estimated_price_dkk: number | null;
+  supermarket: string | null;
+  notes: string | null;
 }
 
 export interface CalendarCategory {

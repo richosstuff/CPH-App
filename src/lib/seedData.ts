@@ -141,15 +141,15 @@ export const DEFAULT_APPLICATIONS: {
   role: string;
   status: ApplicationStatus;
 }[] = [
-  { company: 'Maersk', role: 'Student Assistant, Customer Success', status: 'Applied' },
-  { company: 'Novo Nordisk', role: 'Student Worker (342936)', status: 'Applied' },
-  { company: 'EY', role: 'Technology Consulting Junior Consultant', status: 'Assessment' },
+  { company: 'Maersk', role: 'Student Assistant, Customer Success', status: 'Applied/Assessment' },
+  { company: 'Novo Nordisk', role: 'Student Worker (342936)', status: 'Applied/Assessment' },
+  { company: 'EY', role: 'Technology Consulting Junior Consultant', status: 'Applied/Assessment' },
   { company: 'Salomon', role: 'Retail Sales Assistant', status: 'Rejected' },
-  { company: 'COWI', role: 'Student Assistant, Payroll & People Master Data', status: 'Applied' },
-  { company: 'NNE', role: 'Student Assistant, Engineering Data', status: 'Applied' },
-  { company: 'Novo Nordisk', role: 'Student Assistant, PM & Communication (FPMSAT)', status: 'Applied' },
-  { company: 'Nilfisk', role: 'Student Assistant, Global Sustainability & ESG', status: 'Applied' },
-  { company: 'Green Therma', role: 'Engineering Student Assistant', status: 'Applied' },
+  { company: 'COWI', role: 'Student Assistant, Payroll & People Master Data', status: 'Applied/Assessment' },
+  { company: 'NNE', role: 'Student Assistant, Engineering Data', status: 'Applied/Assessment' },
+  { company: 'Novo Nordisk', role: 'Student Assistant, PM & Communication (FPMSAT)', status: 'Applied/Assessment' },
+  { company: 'Nilfisk', role: 'Student Assistant, Global Sustainability & ESG', status: 'Applied/Assessment' },
+  { company: 'Green Therma', role: 'Engineering Student Assistant', status: 'Applied/Assessment' },
 ];
 
 /** The two fixed weekly anchors from the plan — everything else the user fills in once their DTU timetable is out. */

@@ -4,23 +4,22 @@ import { useAuth } from '../context/AuthContext';
 import type { Application, ApplicationStatus } from '../lib/types';
 import { Plus, Trash2 } from 'lucide-react';
 
-const STATUSES: ApplicationStatus[] = [
-  'Not applied',
-  'Applied',
-  'Assessment',
-  'Interview',
-  'Offer',
-  'Rejected',
-];
+const STATUSES: ApplicationStatus[] = ['Not applied', 'Applied/Assessment', 'Interview', 'Offer', 'Rejected'];
 
 const STATUS_STYLE: Record<ApplicationStatus, string> = {
   'Not applied': 'bg-paper-dim text-ink-soft',
-  Applied: 'bg-harbor/10 text-harbor-dark',
-  Assessment: 'bg-harbor/10 text-harbor-dark',
-  Interview: 'bg-harbor text-white',
+  'Applied/Assessment': 'bg-[#b8860b] text-white',
+  Interview: 'bg-[#3b6fa8] text-white',
   Offer: 'bg-moss text-white',
-  Rejected: 'bg-rust/10 text-rust',
+  Rejected: 'bg-rust text-white',
 };
+
+// Rows saved before the Applied/Assessment merge may still hold the old raw values —
+// treat them the same rather than showing a blank/uncolored select.
+function normalizeStatus(status: string): ApplicationStatus {
+  if (status === 'Applied' || status === 'Assessment') return 'Applied/Assessment';
+  return STATUSES.includes(status as ApplicationStatus) ? (status as ApplicationStatus) : 'Not applied';
+}
 
 export default function Jobs() {
   const { user } = useAuth();
@@ -58,7 +57,9 @@ export default function Jobs() {
     await supabase.from('applications').delete().eq('id', id);
   }
 
-  const sorted = [...applications].sort((a, b) => STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status));
+  const sorted = [...applications].sort(
+    (a, b) => STATUSES.indexOf(normalizeStatus(a.status)) - STATUSES.indexOf(normalizeStatus(b.status))
+  );
 
   const openCount = applications.filter((a) => !['Rejected', 'Offer'].includes(a.status)).length;
 
@@ -86,7 +87,9 @@ export default function Jobs() {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((app) => (
+              {sorted.map((app) => {
+                const status = normalizeStatus(app.status);
+                return (
                 <tr key={app.id} className="border-b border-line last:border-0 group">
                   <td className="px-2 py-1.5">
                     <input
@@ -104,9 +107,9 @@ export default function Jobs() {
                   </td>
                   <td className="px-2 py-1.5">
                     <select
-                      value={app.status}
+                      value={status}
                       onChange={(e) => update(app.id, { status: e.target.value as ApplicationStatus })}
-                      className={`w-full px-2 py-1 rounded-sm text-xs font-medium outline-none border-0 ${STATUS_STYLE[app.status]}`}
+                      className={`w-full px-2 py-1 rounded-sm text-xs font-medium outline-none border-0 ${STATUS_STYLE[status]}`}
                     >
                       {STATUSES.map((s) => (
                         <option key={s} value={s}>
@@ -125,7 +128,8 @@ export default function Jobs() {
                     </button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           <button

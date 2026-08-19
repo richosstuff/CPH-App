@@ -208,7 +208,22 @@ create table if not exists life_goals (
   next_checkpoint_date date,
   progress_pct int not null default 0,
   linked_financial_goal_id uuid references financial_goals(id) on delete set null,
+  notes text,
   status text not null default 'Active'
+);
+alter table life_goals add column if not exists notes text;
+
+-- A weighted milestone toward a life_goal. When any exist for a goal, its progress bar is
+-- derived from these (sum of weights where is_done, clamped to 100) instead of progress_pct.
+create table if not exists goal_checkpoints (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  life_goal_id uuid not null references life_goals(id) on delete cascade,
+  label text not null,
+  description text,
+  weight numeric not null default 0,
+  is_done boolean not null default false,
+  position int not null default 0
 );
 
 -- Populated by upserting the current month's computed net worth whenever the
@@ -234,7 +249,29 @@ create table if not exists todos (
   user_id uuid not null references auth.users(id) on delete cascade,
   text text not null,
   is_done boolean not null default false,
+  position int not null default 0,
+  deadline_date date
+);
+alter table todos add column if not exists deadline_date date;
+
+-- A dish idea, not tied to any day or week. meal_idea_items is its shopping list.
+create table if not exists meal_ideas (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  notes text,
   position int not null default 0
+);
+
+create table if not exists meal_idea_items (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  meal_idea_id uuid not null references meal_ideas(id) on delete cascade,
+  item text not null,
+  quantity text,
+  estimated_price_dkk numeric,
+  supermarket text,
+  notes text
 );
 
 create table if not exists calendar_categories (
@@ -317,9 +354,12 @@ alter table assets enable row level security;
 alter table liabilities enable row level security;
 alter table financial_goals enable row level security;
 alter table life_goals enable row level security;
+alter table goal_checkpoints enable row level security;
 alter table net_worth_snapshots enable row level security;
 alter table exchange_rates enable row level security;
 alter table todos enable row level security;
+alter table meal_ideas enable row level security;
+alter table meal_idea_items enable row level security;
 alter table calendar_categories enable row level security;
 alter table calendar_days enable row level security;
 alter table calendar_events enable row level security;
@@ -364,12 +404,18 @@ drop policy if exists "own rows only" on financial_goals;
 create policy "own rows only" on financial_goals for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on life_goals;
 create policy "own rows only" on life_goals for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on goal_checkpoints;
+create policy "own rows only" on goal_checkpoints for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on net_worth_snapshots;
 create policy "own rows only" on net_worth_snapshots for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on exchange_rates;
 create policy "own rows only" on exchange_rates for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on todos;
 create policy "own rows only" on todos for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on meal_ideas;
+create policy "own rows only" on meal_ideas for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on meal_idea_items;
+create policy "own rows only" on meal_idea_items for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on calendar_categories;
 create policy "own rows only" on calendar_categories for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on calendar_days;

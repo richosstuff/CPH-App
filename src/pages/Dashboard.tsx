@@ -765,21 +765,25 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-ink-soft">
           Drag a handle to reorder, the right edge to resize.{' '}
-          {layoutMode === 'scroll' ? 'Scroll horizontally for more.' : ''} Change layout from Settings.
+          {layoutMode === 'scroll' ? 'Two rows, scroll horizontally for more.' : ''} Change layout from Settings.
         </p>
         <Link to="/settings" className="text-xs text-harbor hover:underline">
           Customize
         </Link>
       </div>
 
-      <div className={layoutMode === 'scroll' ? 'flex flex-nowrap gap-4 overflow-x-auto pb-3' : 'flex flex-wrap gap-4'}>
+      <div
+        className={
+          layoutMode === 'scroll' ? 'grid grid-flow-col grid-rows-2 gap-4 overflow-x-auto pb-3' : 'flex flex-wrap gap-4'
+        }
+      >
         {visibleOrder.map((id, i) => {
           const size = settings?.dashboard_widget_size?.[id] ?? DEFAULT_WIDGET_SIZE[id];
           const widthClass =
             layoutMode === 'scroll'
               ? size === 'half'
-                ? 'w-[360px] shrink-0'
-                : 'w-[640px] shrink-0'
+                ? 'w-[420px] min-h-[240px]'
+                : 'w-[760px] min-h-[240px]'
               : size === 'half'
                 ? 'w-full md:w-[calc(50%-0.5rem)]'
                 : 'w-full';

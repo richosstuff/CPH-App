@@ -22,6 +22,7 @@ export default function CalendarPage() {
   const [addingEventFor, setAddingEventFor] = useState<string | null>(null);
   const [newEventText, setNewEventText] = useState('');
   const [newEventTime, setNewEventTime] = useState('');
+  const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -102,6 +103,11 @@ export default function CalendarPage() {
     if (data) setEvents((prev) => [...prev, data]);
     setNewEventText('');
     setNewEventTime('');
+  }
+
+  async function updateEvent(id: string, patch: Partial<CalendarEvent>) {
+    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    await supabase.from('calendar_events').update(patch).eq('id', id);
   }
 
   async function removeEvent(id: string) {
@@ -265,11 +271,32 @@ export default function CalendarPage() {
 
                 <div className="mt-0.5 flex-1 min-h-0 overflow-y-auto space-y-0.5">
                   {dayEvents.map((ev) => (
-                    <div key={ev.id} className="group/event flex items-center justify-between gap-0.5">
-                      <span className={`text-[9px] truncate leading-tight ${category ? 'text-white' : 'text-ink'}`}>
-                        {ev.time && <span className="opacity-70">{ev.time.slice(0, 5)} </span>}
-                        {ev.label}
-                      </span>
+                    <div
+                      key={ev.id}
+                      onMouseEnter={() => setHoveredEventId(ev.id)}
+                      onMouseLeave={() => setHoveredEventId((prev) => (prev === ev.id ? null : prev))}
+                      className="group/event flex items-center justify-between gap-0.5"
+                    >
+                      {hoveredEventId === ev.id ? (
+                        <div className="flex items-center gap-0.5 min-w-0" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="time"
+                            value={ev.time ?? ''}
+                            onChange={(e) => void updateEvent(ev.id, { time: e.target.value || null })}
+                            className={`w-[40px] shrink-0 bg-white/80 outline-none text-[8px] px-0.5 rounded-sm ${category ? '' : 'border border-line'}`}
+                          />
+                          <input
+                            value={ev.label}
+                            onChange={(e) => void updateEvent(ev.id, { label: e.target.value })}
+                            className={`min-w-0 flex-1 bg-white/80 outline-none text-[9px] px-1 rounded-sm ${category ? '' : 'border border-line'}`}
+                          />
+                        </div>
+                      ) : (
+                        <span className={`text-[9px] truncate leading-tight ${category ? 'text-white' : 'text-ink'}`}>
+                          {ev.time && <span className="opacity-70">{ev.time.slice(0, 5)} </span>}
+                          {ev.label}
+                        </span>
+                      )}
                       <span className="opacity-0 group-hover/event:opacity-100 flex items-center shrink-0">
                         <button
                           onClick={(e) => {
