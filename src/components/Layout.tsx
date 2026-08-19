@@ -58,8 +58,8 @@ export default function Layout() {
         } md:static md:z-auto md:w-56 md:translate-x-0 md:shadow-none`}
       >
         <div>
-          <div className="flex items-center justify-center py-3 mb-6 border-b border-line">
-            <Logo variant="full" className="h-7" />
+          <div className="flex items-center justify-center py-5 mb-6 border-b border-line">
+            <Logo variant="icon" className="w-14 h-14" />
           </div>
 
           <nav className="relative pl-3">
@@ -100,9 +100,9 @@ export default function Layout() {
       </aside>
 
       <main
-        className="flex-1 min-w-0 px-4 md:px-8 max-w-7xl pt-[calc(1.5rem_+_env(safe-area-inset-top))] md:pt-[calc(2rem_+_env(safe-area-inset-top))] pb-[calc(1.5rem_+_env(safe-area-inset-bottom))] md:pb-[calc(2rem_+_env(safe-area-inset-bottom))]"
+        className="flex-1 min-w-0 px-4 md:px-8 max-w-7xl pb-[calc(1.5rem_+_env(safe-area-inset-bottom))] md:pb-[calc(2rem_+_env(safe-area-inset-bottom))]"
       >
-        <div className="flex items-center justify-between gap-3 md:gap-4 mb-6">
+        <div className="sticky top-0 z-30 bg-paper flex items-center justify-between gap-3 md:gap-4 pt-[calc(1.5rem_+_env(safe-area-inset-top))] md:pt-[calc(2rem_+_env(safe-area-inset-top))] pb-4 mb-6 border-b border-line">
           <button
             onClick={() => setDrawerOpen(true)}
             aria-label="Open menu"
@@ -114,7 +114,7 @@ export default function Layout() {
           <SearchBar />
           <Link to="/settings" aria-label="Settings" className="flex items-center gap-2.5 shrink-0 group">
             {settings?.display_name && (
-              <span className="hidden sm:inline text-sm text-ink-soft group-hover:text-ink transition-colors">
+              <span className="hidden sm:inline text-sm font-bold text-harbor group-hover:text-harbor-dark transition-colors">
                 {settings.display_name}
               </span>
             )}
