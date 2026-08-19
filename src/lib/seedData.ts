@@ -181,6 +181,14 @@ export const DEFAULT_EXCHANGE_RATES: { currency: Exclude<Currency, 'DKK'>; rate_
   { currency: 'SEK', rate_to_dkk: 0.66 },
 ];
 
+/** A starter palette so the calendar isn't an empty legend on first load — freely rename, recolor, or delete. */
+export const DEFAULT_CALENDAR_CATEGORIES: { name: string; color: string }[] = [
+  { name: 'Great day', color: '#5f8863' },
+  { name: 'Tough day', color: '#b4622e' },
+  { name: 'Travel', color: '#2d6e7e' },
+  { name: 'Deadline', color: '#c9974f' },
+];
+
 export const DEFAULT_LIFE_GOALS: {
   domain: LifeGoalDomain;
   dream: string;

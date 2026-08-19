@@ -229,6 +229,51 @@ create table if not exists exchange_rates (
   unique (user_id, currency)
 );
 
+create table if not exists todos (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  text text not null,
+  is_done boolean not null default false,
+  position int not null default 0
+);
+
+create table if not exists calendar_categories (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  color text not null default '#2d6e7e'
+);
+
+-- Sparse — a row only exists for a date once a category or label has been set on it.
+create table if not exists calendar_days (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  date date not null,
+  category_id uuid references calendar_categories(id) on delete set null,
+  label text,
+  unique (user_id, date)
+);
+
+create table if not exists notes (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  text text not null default '',
+  position int not null default 0
+);
+
+-- One row per user: accent color, avatar, and the drag-to-reorder layout choices
+-- for the sidebar nav and the Dashboard's widget stack.
+create table if not exists user_settings (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  accent_color text,
+  avatar_data_url text,
+  nav_order jsonb,
+  dashboard_widget_order jsonb,
+  dashboard_widget_visibility jsonb,
+  unique (user_id)
+);
+
 -- Row Level Security: every table is private to the row's own user_id.
 -- This is the piece that vibe-coded apps most often skip — without it,
 -- anyone with an account could read or edit anyone else's data.
@@ -252,6 +297,11 @@ alter table financial_goals enable row level security;
 alter table life_goals enable row level security;
 alter table net_worth_snapshots enable row level security;
 alter table exchange_rates enable row level security;
+alter table todos enable row level security;
+alter table calendar_categories enable row level security;
+alter table calendar_days enable row level security;
+alter table notes enable row level security;
+alter table user_settings enable row level security;
 
 -- Policies are dropped and recreated each run (Postgres has no
 -- CREATE POLICY IF NOT EXISTS) so this file stays safe to re-run.
@@ -295,3 +345,13 @@ drop policy if exists "own rows only" on net_worth_snapshots;
 create policy "own rows only" on net_worth_snapshots for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on exchange_rates;
 create policy "own rows only" on exchange_rates for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on todos;
+create policy "own rows only" on todos for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on calendar_categories;
+create policy "own rows only" on calendar_categories for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on calendar_days;
+create policy "own rows only" on calendar_days for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on notes;
+create policy "own rows only" on notes for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on user_settings;
+create policy "own rows only" on user_settings for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

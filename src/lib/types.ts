@@ -244,3 +244,56 @@ export interface Transaction {
   category: string; // one of EXPENSE_CATEGORIES when type is 'Expense', IncomeCategory when 'Income'
   label: string | null;
 }
+
+export interface Todo {
+  id: string;
+  user_id: string;
+  text: string;
+  is_done: boolean;
+  position: number;
+}
+
+export interface CalendarCategory {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string; // hex
+}
+
+/** Sparse — a row only exists for a date once a category or label has been set on it. */
+export interface CalendarDay {
+  id: string;
+  user_id: string;
+  date: string; // ISO date
+  category_id: string | null;
+  label: string | null;
+}
+
+export interface Note {
+  id: string;
+  user_id: string;
+  text: string;
+  position: number;
+}
+
+export const DASHBOARD_WIDGET_IDS = [
+  'kpis',
+  'this-week',
+  'priorities',
+  'todos',
+  'calendar',
+  'notes',
+  'net-worth-trend',
+  'spending-breakdown',
+] as const;
+export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number];
+
+export interface UserSettings {
+  id: string;
+  user_id: string;
+  accent_color: string | null; // hex; null = default theme color
+  avatar_data_url: string | null;
+  nav_order: string[] | null; // ordered list of route paths; null = default order
+  dashboard_widget_order: DashboardWidgetId[] | null; // null = default order
+  dashboard_widget_visibility: Partial<Record<DashboardWidgetId, boolean>> | null; // missing key = visible
+}

@@ -6,6 +6,7 @@ import {
   DEFAULT_SCHEDULE_BLOCKS,
   DEFAULT_EXCHANGE_RATES,
   DEFAULT_LIFE_GOALS,
+  DEFAULT_CALENDAR_CATEGORIES,
 } from './seedData';
 
 /**
@@ -109,5 +110,15 @@ export async function seedIfEmpty(userId: string) {
   if (!lifeGoalCount) {
     const goals = DEFAULT_LIFE_GOALS.map((goal) => ({ ...goal, user_id: userId, progress_pct: 0 }));
     await supabase.from('life_goals').insert(goals);
+  }
+
+  const { count: calendarCategoryCount } = await supabase
+    .from('calendar_categories')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (!calendarCategoryCount) {
+    const categories = DEFAULT_CALENDAR_CATEGORIES.map((c) => ({ ...c, user_id: userId }));
+    await supabase.from('calendar_categories').insert(categories);
   }
 }
