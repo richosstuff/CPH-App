@@ -58,9 +58,9 @@ export default function Layout() {
         } md:sticky md:top-0 md:h-screen md:z-auto md:w-56 md:translate-x-0 md:shadow-none`}
       >
         <div>
-          <div className="flex items-center justify-center py-5 mb-6 border-b border-line">
+          <Link to="/settings" aria-label="Settings" className="flex items-center justify-center py-5 mb-6 border-b border-line">
             <Logo variant="icon" className="w-14 h-14" />
-          </div>
+          </Link>
 
           <nav className="relative pl-3">
             <div className="absolute left-0 top-1 bottom-1 w-px rail-line" />
@@ -110,7 +110,9 @@ export default function Layout() {
           >
             <Menu className="w-5 h-5" strokeWidth={1.75} />
           </button>
-          <Logo variant="icon" className="md:hidden w-6 h-6 shrink-0" />
+          <Link to="/settings" aria-label="Settings" className="md:hidden shrink-0">
+            <Logo variant="icon" className="w-6 h-6" />
+          </Link>
           <SearchBar />
           <Link to="/settings" aria-label="Settings" className="flex items-center gap-2.5 shrink-0 group">
             {settings?.display_name && (
