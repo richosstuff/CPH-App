@@ -40,7 +40,7 @@ export default function Layout() {
       });
   }, [user, location.pathname]);
 
-  const nav = orderNavItems(settings?.nav_order);
+  const nav = orderNavItems(settings?.nav_order).filter((item) => settings?.nav_visibility?.[item.to] !== false);
 
   return (
     <div className="min-h-screen bg-paper flex">

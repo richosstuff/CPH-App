@@ -30,6 +30,7 @@ const EMPTY_SETTINGS: UserSettings = {
   display_name: null,
   font_preset: null,
   nav_order: null,
+  nav_visibility: null,
   dashboard_widget_order: null,
   dashboard_widget_visibility: null,
   dashboard_widget_size: null,
@@ -67,6 +68,7 @@ export default function Settings() {
           display_name: merged.display_name,
           font_preset: merged.font_preset,
           nav_order: merged.nav_order,
+          nav_visibility: merged.nav_visibility,
           dashboard_widget_order: merged.dashboard_widget_order,
           dashboard_widget_visibility: merged.dashboard_widget_visibility,
           dashboard_widget_size: merged.dashboard_widget_size,
@@ -189,27 +191,41 @@ export default function Settings() {
 
       <div className="border border-line rounded-sm bg-white p-5 mb-6">
         <h2 className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-1">Sidebar order</h2>
-        <p className="text-xs text-ink-soft mb-3">Drag to reorder.</p>
+        <p className="text-xs text-ink-soft mb-3">Drag to reorder, uncheck to hide from the sidebar.</p>
         <div>
-          {orderedNav.map((item, i) => (
-            <div
-              key={item.to}
-              draggable
-              onDragStart={() => setNavDragIndex(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleNavDrop(i)}
-              onDragEnd={() => setNavDragIndex(null)}
-              className={`flex items-center gap-2 px-2 py-1.5 border-b border-line last:border-0 text-sm ${
-                navDragIndex === i ? 'opacity-40' : ''
-              }`}
-            >
-              <span className="cursor-grab text-ink-soft/50 hover:text-ink-soft shrink-0">
-                <GripVertical className="w-4 h-4" />
-              </span>
-              <item.icon className="w-3.5 h-3.5 text-ink-soft shrink-0" strokeWidth={1.75} />
-              {item.label}
-            </div>
-          ))}
+          {orderedNav.map((item, i) => {
+            const visible = settings.nav_visibility?.[item.to] !== false;
+            return (
+              <div
+                key={item.to}
+                draggable
+                onDragStart={() => setNavDragIndex(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleNavDrop(i)}
+                onDragEnd={() => setNavDragIndex(null)}
+                className={`flex items-center justify-between gap-2 px-2 py-1.5 border-b border-line last:border-0 text-sm ${
+                  navDragIndex === i ? 'opacity-40' : ''
+                } ${visible ? '' : 'opacity-50'}`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className="cursor-grab text-ink-soft/50 hover:text-ink-soft shrink-0">
+                    <GripVertical className="w-4 h-4" />
+                  </span>
+                  <item.icon className="w-3.5 h-3.5 text-ink-soft shrink-0" strokeWidth={1.75} />
+                  <span className="truncate">{item.label}</span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={visible}
+                  onChange={(e) =>
+                    void save({ nav_visibility: { ...settings.nav_visibility, [item.to]: e.target.checked } })
+                  }
+                  aria-label={`Show ${item.label} in sidebar`}
+                  className="accent-harbor w-4 h-4 shrink-0"
+                />
+              </div>
+            );
+          })}
         </div>
         {settings.nav_order && (
           <button onClick={() => void save({ nav_order: null })} className="mt-3 text-xs text-ink-soft hover:text-rust">

@@ -338,6 +338,7 @@ create table if not exists user_settings (
   display_name text,
   font_preset text,
   nav_order jsonb,
+  nav_visibility jsonb,
   dashboard_widget_order jsonb,
   dashboard_widget_visibility jsonb,
   dashboard_widget_size jsonb,
@@ -349,6 +350,7 @@ alter table user_settings add column if not exists display_name text;
 alter table user_settings add column if not exists font_preset text;
 alter table user_settings add column if not exists dashboard_layout_mode text;
 alter table user_settings add column if not exists dashboard_widget_size jsonb;
+alter table user_settings add column if not exists nav_visibility jsonb;
 
 -- Row Level Security: every table is private to the row's own user_id.
 -- This is the piece that vibe-coded apps most often skip — without it,

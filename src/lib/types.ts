@@ -372,6 +372,7 @@ export interface UserSettings {
   display_name: string | null;
   font_preset: string | null; // id from FONT_PRESETS; null = default
   nav_order: string[] | null; // ordered list of route paths; null = default order
+  nav_visibility: Partial<Record<string, boolean>> | null; // keyed by route path; missing key = visible
   dashboard_widget_order: DashboardWidgetId[] | null; // null = default order
   dashboard_widget_visibility: Partial<Record<DashboardWidgetId, boolean>> | null; // missing key = visible
   dashboard_widget_size: Partial<Record<DashboardWidgetId, DashboardWidgetSize>> | null; // missing key = DEFAULT_WIDGET_SIZE
