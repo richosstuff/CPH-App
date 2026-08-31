@@ -286,12 +286,13 @@ export default function Schedule() {
                             left: `calc(${(col / of) * 100}% + 2px)`,
                             width: `calc(${(1 / of) * 100}% - 4px)`,
                           }}
-                          title={`${block.title} · ${block.start_time}–${block.end_time}${block.location ? ' · ' + block.location : ''}`}
+                          title={`${block.title} · ${block.start_time.slice(0, 5)}–${block.end_time.slice(0, 5)}${block.location ? ' · ' + block.location : ''}`}
                         >
                           <div className="font-medium truncate">{block.title}</div>
                           <div className="opacity-80 truncate">
-                            {block.start_time}–{block.end_time}
+                            {block.start_time.slice(0, 5)}–{block.end_time.slice(0, 5)}
                           </div>
+                          {block.location && <div className="opacity-50 truncate">{block.location}</div>}
                         </div>
                       );
                     })}
