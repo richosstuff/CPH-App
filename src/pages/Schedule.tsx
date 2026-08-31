@@ -250,7 +250,7 @@ export default function Schedule() {
                 ))}
               </div>
               <div className="flex relative" style={{ height: (rangeEnd - rangeStart) * HOUR_PX }}>
-                <div className="w-11 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative">
+                <div className="w-11 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative overflow-hidden">
                   {Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => rangeStart + i).map((h) => (
                     <div
                       key={h}
