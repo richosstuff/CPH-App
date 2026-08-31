@@ -282,6 +282,15 @@ create table if not exists meal_plans (
   notes text,
   position int not null default 0
 );
+-- meal_plans predates name/notes/position being added to it — create table
+-- if not exists is a no-op on a table that already exists, so an explicit
+-- alter is the only thing that actually lands these on a live database.
+-- name gets a default here (unlike its plain "not null" in the create
+-- table above) purely so this alter stays safe to run against a table
+-- that already has rows — the create path never hits that case.
+alter table meal_plans add column if not exists name text not null default 'New meal plan';
+alter table meal_plans add column if not exists notes text;
+alter table meal_plans add column if not exists position int not null default 0;
 
 create table if not exists meal_plan_items (
   id uuid primary key default uuid_generate_v4(),
