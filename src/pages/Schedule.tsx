@@ -23,7 +23,7 @@ const CATEGORY_BLOCK_STYLE: Record<ScheduleCategory, string> = {
   Other: 'bg-paper-dim text-ink-soft border border-line',
 };
 
-const HOUR_PX = 56;
+const HOUR_PX = 45;
 const DEFAULT_RANGE = { start: 7, end: 22 };
 
 function toMinutes(time: string): number {
@@ -235,13 +235,13 @@ export default function Schedule() {
         <div className="mt-8">
           <h2 className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-3">Weekly view</h2>
           <div className="border border-line rounded-sm bg-white overflow-x-auto">
-            <div style={{ minWidth: 56 + DAY_NAMES.length * 96 }}>
+            <div style={{ minWidth: 44 + DAY_NAMES.length * 77 }}>
               <div className="flex border-b border-line">
-                <div className="w-14 shrink-0 sticky left-0 bg-white" />
+                <div className="w-11 shrink-0 sticky left-0 bg-white" />
                 {DAY_NAMES.map((name, i) => (
                   <div
                     key={name}
-                    className={`flex-1 min-w-[96px] text-center font-mono text-xs uppercase tracking-wide py-2 ${
+                    className={`flex-1 min-w-[77px] text-center font-mono text-xs uppercase tracking-wide py-2 ${
                       i === todayIdx ? 'text-harbor font-semibold' : 'text-ink-soft'
                     }`}
                   >
@@ -250,7 +250,7 @@ export default function Schedule() {
                 ))}
               </div>
               <div className="flex relative" style={{ height: (rangeEnd - rangeStart) * HOUR_PX }}>
-                <div className="w-14 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative">
+                <div className="w-11 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative">
                   {Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => rangeStart + i).map((h) => (
                     <div
                       key={h}
@@ -264,7 +264,7 @@ export default function Schedule() {
                 {DAY_NAMES.map((_, dayIdx) => (
                   <div
                     key={dayIdx}
-                    className="flex-1 min-w-[96px] relative border-r border-line last:border-r-0"
+                    className="flex-1 min-w-[77px] relative border-r border-line last:border-r-0"
                     style={{
                       backgroundColor: dayIdx === todayIdx ? 'rgba(45,110,126,0.05)' : undefined,
                       backgroundImage: `repeating-linear-gradient(to bottom, var(--color-line) 0, var(--color-line) 1px, transparent 1px, transparent ${HOUR_PX}px)`,
@@ -272,27 +272,27 @@ export default function Schedule() {
                   >
                     {layoutDay(blocks.filter((b) => b.day_of_week === dayIdx)).map(({ block, col, of }) => {
                       const top = (toMinutes(block.start_time) - rangeStart * 60) * (HOUR_PX / 60);
-                      const height = Math.max(
+                      const minHeight = Math.max(
                         (toMinutes(block.end_time) - toMinutes(block.start_time)) * (HOUR_PX / 60),
-                        18
+                        14
                       );
                       return (
                         <div
                           key={block.id}
-                          className={`absolute rounded-sm px-1.5 py-1 text-[11px] leading-tight overflow-hidden ${CATEGORY_BLOCK_STYLE[block.category]}`}
+                          className={`absolute rounded-sm px-1 py-0.5 text-[9px] leading-tight ${CATEGORY_BLOCK_STYLE[block.category]}`}
                           style={{
                             top,
-                            height,
+                            minHeight,
                             left: `calc(${(col / of) * 100}% + 2px)`,
                             width: `calc(${(1 / of) * 100}% - 4px)`,
                           }}
                           title={`${block.title} · ${block.start_time.slice(0, 5)}–${block.end_time.slice(0, 5)}${block.location ? ' · ' + block.location : ''}`}
                         >
-                          <div className="font-medium truncate">{block.title}</div>
+                          <div className="font-medium">{block.title}</div>
                           <div className="opacity-80 truncate">
                             {block.start_time.slice(0, 5)}–{block.end_time.slice(0, 5)}
                           </div>
-                          {block.location && <div className="opacity-50 truncate">{block.location}</div>}
+                          {block.location && <div className="opacity-50">{block.location}</div>}
                         </div>
                       );
                     })}
