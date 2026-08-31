@@ -301,6 +301,24 @@ export interface MealPlanItem {
   position: number;
 }
 
+/** One grocery run. completed_at is set automatically once every item is checked off. */
+export interface GroceryList {
+  id: string;
+  user_id: string;
+  store_name: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface GroceryListItem {
+  id: string;
+  user_id: string;
+  list_id: string;
+  text: string;
+  is_done: boolean;
+  position: number;
+}
+
 export interface CalendarCategory {
   id: string;
   user_id: string;

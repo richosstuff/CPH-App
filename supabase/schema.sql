@@ -291,6 +291,27 @@ create table if not exists meal_plan_items (
   position int not null default 0
 );
 
+-- One grocery run. completed_at is set the moment every one of its items is
+-- checked off (and cleared again if you edit it back to not-all-done) —
+-- see recomputeCompletion in ShoppingList.tsx. Not the same table as the
+-- older, unused shopping_list_items (superseded before it was ever wired up).
+create table if not exists grocery_lists (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  store_name text not null default '',
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+
+create table if not exists grocery_list_items (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  list_id uuid not null references grocery_lists(id) on delete cascade,
+  text text not null,
+  is_done boolean not null default false,
+  position int not null default 0
+);
+
 create table if not exists calendar_categories (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -366,6 +387,8 @@ alter table network_contacts enable row level security;
 alter table meal_weeks enable row level security;
 alter table meal_days enable row level security;
 alter table shopping_list_items enable row level security;
+alter table grocery_lists enable row level security;
+alter table grocery_list_items enable row level security;
 alter table schedule_blocks enable row level security;
 alter table expenses enable row level security;
 alter table transactions enable row level security;
@@ -411,6 +434,10 @@ drop policy if exists "own rows only" on meal_days;
 create policy "own rows only" on meal_days for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on shopping_list_items;
 create policy "own rows only" on shopping_list_items for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on grocery_lists;
+create policy "own rows only" on grocery_lists for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "own rows only" on grocery_list_items;
+create policy "own rows only" on grocery_list_items for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on schedule_blocks;
 create policy "own rows only" on schedule_blocks for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "own rows only" on expenses;
