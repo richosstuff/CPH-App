@@ -236,7 +236,7 @@ export default function Schedule() {
           <h2 className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-3">Weekly view</h2>
           <div className="border border-line rounded-sm bg-white overflow-x-auto">
             <div style={{ minWidth: 44 + DAY_NAMES.length * 77 }}>
-              <div className="flex border-b border-line">
+              <div className="flex">
                 <div className="w-11 shrink-0 sticky left-0 bg-white" />
                 {DAY_NAMES.map((name, i) => (
                   <div
@@ -250,7 +250,7 @@ export default function Schedule() {
                 ))}
               </div>
               <div className="flex relative" style={{ height: (rangeEnd - rangeStart) * HOUR_PX }}>
-                <div className="w-11 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative overflow-hidden">
+                <div className="w-11 shrink-0 sticky left-0 bg-white z-10 border-r border-line relative">
                   {Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => rangeStart + i).map((h) => (
                     <div
                       key={h}
