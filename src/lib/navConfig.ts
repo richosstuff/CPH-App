@@ -8,7 +8,7 @@ import {
   Target,
   ListTodo,
   CalendarDays,
-  Utensils,
+  ShoppingCart,
   Calendar,
   type LucideIcon,
 } from 'lucide-react';
@@ -31,7 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/goals', label: 'Goals', icon: Target },
   { to: '/todos', label: 'To-Do', icon: ListTodo },
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { to: '/meals', label: 'Meals', icon: Utensils },
+  { to: '/meals', label: 'Groceries', icon: ShoppingCart },
   { to: '/schedule', label: 'Schedule', icon: Calendar },
 ];
 
