@@ -236,6 +236,7 @@ export interface ExchangeRate {
   user_id: string;
   currency: Currency;
   rate_to_dkk: number;
+  updated_at: string;
 }
 
 export type TransactionType = 'Expense' | 'Income';

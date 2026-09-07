@@ -243,6 +243,7 @@ create table if not exists exchange_rates (
   rate_to_dkk numeric not null,
   unique (user_id, currency)
 );
+alter table exchange_rates add column if not exists updated_at timestamptz not null default now();
 
 create table if not exists todos (
   id uuid primary key default uuid_generate_v4(),

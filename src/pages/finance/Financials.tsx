@@ -73,19 +73,61 @@ export default function Financials() {
   }
 
   async function updateRate(currency: Currency, rate_to_dkk: number) {
+    const updated_at = new Date().toISOString();
     const existing = rates.find((r) => r.currency === currency);
-    setRates((prev) => (existing ? prev.map((r) => (r.currency === currency ? { ...r, rate_to_dkk } : r)) : prev));
+    setRates((prev) =>
+      existing ? prev.map((r) => (r.currency === currency ? { ...r, rate_to_dkk, updated_at } : r)) : prev
+    );
     if (existing) {
-      await supabase.from('exchange_rates').update({ rate_to_dkk }).eq('id', existing.id);
+      await supabase.from('exchange_rates').update({ rate_to_dkk, updated_at }).eq('id', existing.id);
     } else {
       const { data } = await supabase
         .from('exchange_rates')
-        .insert({ user_id: user!.id, currency, rate_to_dkk })
+        .insert({ user_id: user!.id, currency, rate_to_dkk, updated_at })
         .select()
         .single();
       if (data) setRates((prev) => [...prev, data]);
     }
   }
+
+  // Live rates from the ECB's daily reference feed (via the free, keyless
+  // frankfurter.app wrapper) — queried as "1 DKK = X foreign" since that's
+  // the one request that covers all four currencies at once, then inverted
+  // to the DKK-per-unit shape this app stores. Never throws: a network
+  // hiccup just leaves the existing stored rates in place.
+  const [ratesRefreshing, setRatesRefreshing] = useState(false);
+  async function refreshLiveRates() {
+    setRatesRefreshing(true);
+    try {
+      const targets = CURRENCIES.filter((c) => c !== 'DKK');
+      const res = await fetch(`https://api.frankfurter.app/latest?from=DKK&to=${targets.join(',')}`);
+      if (!res.ok) return;
+      const { rates: dkkToForeign } = (await res.json()) as { rates: Record<string, number> };
+      for (const c of targets) {
+        const perDkk = dkkToForeign[c];
+        if (perDkk) await updateRate(c, Math.round((1 / perDkk) * 10000) / 10000);
+      }
+    } catch {
+      // offline or the API's unreachable — keep whatever rates are already stored
+    } finally {
+      setRatesRefreshing(false);
+    }
+  }
+
+  // Auto-refresh once the stored rates are missing or more than 12h old —
+  // the ECB only publishes once a day anyway, so this just means a fresh
+  // number greets you at most once per session, not a network call on
+  // every visit. A manual "Refresh now" button covers the instant case.
+  useEffect(() => {
+    if (loading) return;
+    const targets = CURRENCIES.filter((c) => c !== 'DKK');
+    const staleOrMissing = targets.some((c) => {
+      const r = rates.find((rate) => rate.currency === c);
+      return !r || Date.now() - new Date(r.updated_at).getTime() > 12 * 60 * 60 * 1000;
+    });
+    if (staleOrMissing) void refreshLiveRates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   async function addTransaction() {
     const { data } = await supabase
@@ -180,7 +222,25 @@ export default function Financials() {
   return (
     <div>
       <div className="border border-line rounded-sm bg-white p-4 mb-6">
-        <p className="font-mono text-xs uppercase tracking-wide text-ink-soft mb-3">Exchange rates → DKK</p>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">Exchange rates → DKK</p>
+          <div className="flex items-center gap-2 font-mono text-[10px] text-ink-soft">
+            <span>
+              {rates.length === 0
+                ? 'Not fetched yet'
+                : `Updated ${new Date(
+                    Math.max(...rates.map((r) => new Date(r.updated_at).getTime()))
+                  ).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`}
+            </span>
+            <button
+              onClick={() => void refreshLiveRates()}
+              disabled={ratesRefreshing}
+              className="text-harbor hover:underline disabled:opacity-50 disabled:no-underline"
+            >
+              {ratesRefreshing ? 'Refreshing…' : 'Refresh now'}
+            </button>
+          </div>
+        </div>
         <div className="flex flex-wrap gap-4">
           {CURRENCIES.filter((c) => c !== 'DKK').map((c) => {
             const rate = rates.find((r) => r.currency === c);
