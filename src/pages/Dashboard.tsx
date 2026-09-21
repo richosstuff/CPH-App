@@ -253,8 +253,10 @@ export default function Dashboard() {
   }
 
   async function toggleTodo(id: string, is_done: boolean) {
-    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, is_done } : t)));
-    await supabase.from('todos').update({ is_done }).eq('id', id);
+    // Matches the To-Do page: ticking stamps completed_at; unticking leaves it as the "last ticked" record.
+    const patch: Partial<Todo> = is_done ? { is_done: true, completed_at: new Date().toISOString() } : { is_done: false };
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    await supabase.from('todos').update(patch).eq('id', id);
   }
 
   async function quickAddTodo() {
@@ -528,7 +530,12 @@ export default function Dashboard() {
         );
 
       case 'todos': {
-        const shown = todos.slice(0, 6);
+        // Ticked tasks live on the Done tab of the full To-Do page now — the widget only shows what's left,
+        // soonest deadline first.
+        const openSorted = todos
+          .filter((t) => !t.is_done)
+          .sort((a, b) => (a.deadline_date ?? '9999-99-99').localeCompare(b.deadline_date ?? '9999-99-99'));
+        const shown = openSorted.slice(0, 6);
         return (
           <div>
             {shown.length === 0 && <p className="text-sm text-ink-soft mb-2">Nothing on the list.</p>}
@@ -547,9 +554,9 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            {todos.length > 6 && (
+            {openSorted.length > 6 && (
               <Link to="/todos" className="text-xs text-harbor hover:underline">
-                +{todos.length - 6} more
+                +{openSorted.length - 6} more
               </Link>
             )}
             <input
