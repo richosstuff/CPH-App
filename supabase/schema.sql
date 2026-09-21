@@ -251,9 +251,12 @@ create table if not exists todos (
   text text not null,
   is_done boolean not null default false,
   position int not null default 0,
-  deadline_date date
+  deadline_date date,
+  completed_at timestamptz
 );
 alter table todos add column if not exists deadline_date date;
+-- Set whenever is_done flips to true; left in place if later unticked, so it still shows "last ticked".
+alter table todos add column if not exists completed_at timestamptz;
 
 -- A dish idea, not tied to any day or week. meal_idea_items is its shopping list.
 create table if not exists meal_ideas (

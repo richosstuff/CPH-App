@@ -263,6 +263,7 @@ export interface Todo {
   is_done: boolean;
   position: number;
   deadline_date: string | null; // ISO date
+  completed_at: string | null; // ISO timestamp — set when is_done flips to true; kept if later unticked
 }
 
 /** A recipe/dish idea — not tied to any day or week. Its shopping list is MealIdeaItem rows. */
