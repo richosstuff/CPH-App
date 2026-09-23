@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import type { Todo } from '../lib/types';
 import { reorder } from '../lib/dragReorder';
-import { formatShortDate } from '../lib/dateUtils';
+import { formatShortDate, toLocalISO } from '../lib/dateUtils';
 import { Plus, Trash2, Check, GripVertical } from 'lucide-react';
 
 type SortMode = 'manual' | 'deadline';
@@ -49,6 +49,18 @@ export default function Todos() {
   function toggleDone(todo: Todo) {
     const patch: Partial<Todo> = todo.is_done ? { is_done: false } : { is_done: true, completed_at: new Date().toISOString() };
     void updateTodo(todo.id, patch);
+  }
+
+  /** Changes just the calendar date of completed_at (from the Done tab), keeping whatever time-of-day it already had. */
+  function updateCompletedDate(todo: Todo, newDateStr: string) {
+    if (!newDateStr) {
+      void updateTodo(todo.id, { completed_at: null });
+      return;
+    }
+    const [y, m, d] = newDateStr.split('-').map(Number);
+    const next = todo.completed_at ? new Date(todo.completed_at) : new Date();
+    next.setFullYear(y, m - 1, d);
+    void updateTodo(todo.id, { completed_at: next.toISOString() });
   }
 
   async function removeTodo(id: string) {
@@ -178,13 +190,23 @@ export default function Todos() {
               onChange={(e) => void updateTodo(todo.id, { deadline_date: e.target.value || null })}
               className="w-24 sm:w-[136px] shrink-0 px-1 sm:px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs text-ink-soft"
             />
-            {todo.completed_at && (
-              <span
-                className="shrink-0 whitespace-nowrap px-1 font-mono text-xs text-moss"
-                title={`Last ticked ${new Date(todo.completed_at).toLocaleString()}`}
-              >
-                ✓ {formatShortDate(todo.completed_at.slice(0, 10))}
-              </span>
+            {tab === 'Done' ? (
+              <input
+                type="date"
+                value={todo.completed_at ? toLocalISO(new Date(todo.completed_at)) : ''}
+                onChange={(e) => updateCompletedDate(todo, e.target.value)}
+                title="Date this was ticked off — edit to correct it"
+                className="w-24 sm:w-[136px] shrink-0 px-1 sm:px-2 py-1 bg-transparent outline-none rounded-sm focus:bg-paper-dim/40 font-mono text-xs text-moss"
+              />
+            ) : (
+              todo.completed_at && (
+                <span
+                  className="shrink-0 whitespace-nowrap px-1 font-mono text-xs text-moss"
+                  title={`Last ticked ${new Date(todo.completed_at).toLocaleString()}`}
+                >
+                  ✓ {formatShortDate(toLocalISO(new Date(todo.completed_at)))}
+                </span>
+              )
             )}
             <button
               onClick={() => void removeTodo(todo.id)}
