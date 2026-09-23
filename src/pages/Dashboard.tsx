@@ -253,8 +253,10 @@ export default function Dashboard() {
   }
 
   async function toggleTodo(id: string, is_done: boolean) {
-    // Matches the To-Do page: ticking stamps completed_at; unticking leaves it as the "last ticked" record.
-    const patch: Partial<Todo> = is_done ? { is_done: true, completed_at: new Date().toISOString() } : { is_done: false };
+    // Matches the To-Do page: ticking stamps completed_at, unticking clears it.
+    const patch: Partial<Todo> = is_done
+      ? { is_done: true, completed_at: new Date().toISOString() }
+      : { is_done: false, completed_at: null };
     setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
     await supabase.from('todos').update(patch).eq('id', id);
   }
